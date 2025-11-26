@@ -1,75 +1,94 @@
 using OpenUSSD.Actions;
 using OpenUSSD.Attributes;
+using OpenUSSD.Extensions;
 using OpenUSSD.models;
 
 namespace Sample.Handlers;
 
 /// <summary>
-/// Example action handler for processing money transfers
-/// Demonstrates multi-step flow with strongly-typed session data
+/// Handler for collecting recipient phone number
 /// </summary>
-[UssdAction] // Auto-generates key as "Transfer" from class name
-public class TransferHandler : BaseActionHandler
+[UssdAction]
+public class TransferRecipientHandler : BaseActionHandler
 {
     public override Task<UssdStepResult> HandleAsync(UssdContext context)
     {
         var input = context.Request.UserData;
 
-        // Get current step from session using strongly-typed key
-        var transferStep = Get(context, SessionKeys.TransferStep) ?? "recipient";
-
-        switch (transferStep)
+        // Basic validation for phone number (you can add more sophisticated validation)
+        if (string.IsNullOrWhiteSpace(input) || input.Length < 10)
         {
-            case "recipient":
-                // Store recipient phone number using strongly-typed key
-                Set(context, SessionKeys.Recipient, input);
-                Set(context, SessionKeys.TransferStep, "amount");
-                return Task.FromResult(Continue("Enter amount to transfer:"));
+            // Stay on current node (TransferRecipient) and show error
+            return Task.FromResult(Continue("Invalid phone number. Please enter a valid phone number:"));
+        }
 
-            case "amount":
-                // Validate and store amount
-                if (!decimal.TryParse(input, out var amount) || amount <= 0)
-                {
-                    return Task.FromResult(Continue("Invalid amount. Please enter a valid amount:"));
-                }
+        // Store recipient phone number using strongly-typed key
+        Set(context, SessionKeys.Recipient, input);
 
-                Set(context, SessionKeys.Amount, amount);
-                Set(context, SessionKeys.TransferStep, "confirm");
+        // Navigate to amount collection node
+        return Task.FromResult(GoTo(BankMenuNode.TransferAmount));
+    }
+}
 
-                var recipient = Get(context, SessionKeys.Recipient);
-                return Task.FromResult(Continue(
-                    $"Confirm transfer:\nTo: {recipient}\nAmount: GHS {amount:F2}\n1. Confirm\n2. Cancel"
-                ));
+/// <summary>
+/// Handler for collecting transfer amount
+/// </summary>
+[UssdAction]
+public class TransferAmountHandler : BaseActionHandler
+{
+    public override Task<UssdStepResult> HandleAsync(UssdContext context)
+    {
+        var input = context.Request.UserData;
 
-            case "confirm":
-                if (input == "1")
-                {
-                    // Process transfer
-                    var recipientPhone = Get(context, SessionKeys.Recipient);
-                    var transferAmount = Get(context, SessionKeys.Amount);
+        // Validate and store amount
+        if (!decimal.TryParse(input, out var amount) || amount <= 0)
+        {
+            return Task.FromResult(Continue("Invalid amount. Please enter a valid amount:"));
+        }
 
-                    // In a real application, you would process the transfer here
-                    // await _transferService.ProcessTransferAsync(context.Session.Msisdn, recipientPhone, transferAmount);
+        Set(context, SessionKeys.Amount, amount);
 
-                    // Clear transfer session data
-                    Remove(context, SessionKeys.TransferStep);
-                    Remove(context, SessionKeys.Recipient);
-                    Remove(context, SessionKeys.Amount);
+        // Build confirmation message with collected data
+        var recipient = Get(context, SessionKeys.Recipient);
+        var confirmMessage = $"Confirm transfer:\nTo: {recipient}\nAmount: GHS {amount:F2}\n\n1. Confirm\n2. Cancel";
 
-                    return Task.FromResult(End($"Transfer of GHS {transferAmount:F2} to {recipientPhone} successful!\nThank you."));
-                }
-                else
-                {
-                    // Clear transfer session data
-                    Remove(context, SessionKeys.TransferStep);
-                    Remove(context, SessionKeys.Recipient);
-                    Remove(context, SessionKeys.Amount);
+        // Navigate to confirmation node with custom message
+        return Task.FromResult(Continue(confirmMessage, BankMenuNode.TransferConfirm.ToNodeId()));
+    }
+}
 
-                    return Task.FromResult(GoHome());
-                }
+/// <summary>
+/// Handler for confirming and processing the transfer
+/// </summary>
+[UssdAction]
+public class TransferConfirmHandler : BaseActionHandler
+{
+    public override Task<UssdStepResult> HandleAsync(UssdContext context)
+    {
+        var input = context.Request.UserData;
 
-            default:
-                return Task.FromResult(End("An error occurred. Please try again."));
+        if (input == "1")
+        {
+            // Process transfer
+            var recipientPhone = Get(context, SessionKeys.Recipient);
+            var transferAmount = Get(context, SessionKeys.Amount);
+
+            // In a real application, you would process the transfer here
+            // await _transferService.ProcessTransferAsync(context.Session.Msisdn, recipientPhone, transferAmount);
+
+            // Clear transfer session data (End() and GoHome() clear session automatically)
+            Remove(context, SessionKeys.Recipient);
+            Remove(context, SessionKeys.Amount);
+
+            return Task.FromResult(End($"Transfer of GHS {transferAmount:F2} to {recipientPhone} successful!\nThank you."));
+        }
+        else
+        {
+            // Clear transfer session data (GoHome() clears session automatically)
+            Remove(context, SessionKeys.Recipient);
+            Remove(context, SessionKeys.Amount);
+
+            return Task.FromResult(GoHome());
         }
     }
 }

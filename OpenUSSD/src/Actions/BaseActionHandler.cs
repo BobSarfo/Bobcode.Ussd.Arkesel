@@ -1,4 +1,5 @@
 using OpenUSSD.Attributes;
+using OpenUSSD.Extensions;
 using OpenUSSD.models;
 
 namespace OpenUSSD.Actions;
@@ -60,6 +61,26 @@ public abstract class BaseActionHandler : IActionHandler
         {
             GoHome = true,
             ContinueSession = true
+        };
+
+    /// <summary>
+    /// Helper method to navigate to a specific menu node using enum
+    /// </summary>
+    protected UssdStepResult GoTo<TNode>(TNode node) where TNode : struct, Enum
+        => new UssdStepResult
+        {
+            ContinueSession = true,
+            NextStep = node.ToNodeId()
+        };
+
+    /// <summary>
+    /// Helper method to navigate to a specific menu node using string ID
+    /// </summary>
+    protected UssdStepResult GoTo(string nodeId)
+        => new UssdStepResult
+        {
+            ContinueSession = true,
+            NextStep = nodeId
         };
 
     /// <summary>

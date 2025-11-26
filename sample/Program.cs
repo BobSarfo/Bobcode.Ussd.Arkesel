@@ -36,10 +36,23 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
         .Option("4", "View Products").GoTo(BankMenuNode.Products)
     )
 
-    // Transfer flow
+    // Transfer flow - Step 1: Collect recipient
     .Node(BankMenuNode.TransferRecipient, n => n
         .Message("Enter recipient phone number:")
-        .Input().Action<TransferHandler>()
+        .Input().Action<TransferRecipientHandler>()
+    )
+
+    // Transfer flow - Step 2: Collect amount
+    .Node(BankMenuNode.TransferAmount, n => n
+        .Message("Enter amount to transfer:")
+        .Input().Action<TransferAmountHandler>()
+    )
+
+    // Transfer flow - Step 3: Confirm transfer
+    .Node(BankMenuNode.TransferConfirm, n => n
+        .Message("Confirm transfer:")
+        .Option("1", "Confirm").Action<TransferConfirmHandler>()
+        .Option("2", "Cancel").GoTo(BankMenuNode.Main)
     )
 
     // Voting menu

@@ -18,4 +18,7 @@ public class UssdStepResult
 
     public static UssdStepResult Home()
         => new() { GoHome = true, ContinueSession = true };
+
+    public static UssdStepResult NavigateTo(string nodeId)
+        => new() { ContinueSession = true, NextStep = nodeId };
 }
