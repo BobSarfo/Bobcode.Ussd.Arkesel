@@ -84,7 +84,7 @@ public class PageBuilder<TNode> where TNode : struct, Enum
     /// <summary>
     /// Sets the message text for this page
     /// </summary>
-    public PageBuilder<TNode> Message(string message)
+    public PageBuilder<TNode> Title(string message)
     {
         _messageLines.Add(message);
         UpdateTitle();

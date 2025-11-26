@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -9,15 +9,18 @@
         <PackageId>OpenUSSD</PackageId>
         <Version>1.0.0</Version>
         <Authors>Robert Sagoe Sarfo</Authors>
-        <Company>Your Company</Company>
-        <Description>Libarary to create ussd application</Description>
-        <RepositoryUrl>https://github.com/you/repo</RepositoryUrl>
-        <PackageTags>sdk;ussd</PackageTags>
+        <Company>OpenUSSD</Company>
+        <Description>Library to create USSD applications</Description>
+        <RepositoryUrl>https://github.com/sst/openussd</RepositoryUrl>
+        <PackageTags>SDK;USSD;Telecom</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
+      <None Include="README.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
 </Project>

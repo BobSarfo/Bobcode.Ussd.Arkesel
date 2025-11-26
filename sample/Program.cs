@@ -29,7 +29,7 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
 
     // Main menu
     .Page(BankMenuNode.Main, n => n
-        .Message("Welcome to Demo Bank")
+        .Title("Welcome to Demo Bank")
         .Option("1", "Check Balance").Action<BalanceCheckHandler>()
         .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
         .Option("3", "Vote").GoTo(BankMenuNode.VoteMenu)
@@ -38,26 +38,26 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
 
     // Transfer flow - Step 1: Collect recipient
     .Page(BankMenuNode.TransferRecipient, n => n
-        .Message("Enter recipient phone number:")
+        .Title("Enter recipient phone number:")
         .Input().Action<TransferRecipientHandler>()
     )
 
     // Transfer flow - Step 2: Collect amount
     .Page(BankMenuNode.TransferAmount, n => n
-        .Message("Enter amount to transfer:")
+        .Title("Enter amount to transfer:")
         .Input().Action<TransferAmountHandler>()
     )
 
     // Transfer flow - Step 3: Confirm transfer
     .Page(BankMenuNode.TransferConfirm, n => n
-        .Message("Confirm transfer:")
+        .Title("Confirm transfer:")
         .Option("1", "Confirm").Action<TransferConfirmHandler>()
         .Option("2", "Cancel").GoTo(BankMenuNode.Main)
     )
 
     // Voting menu
     .Page(BankMenuNode.VoteMenu, n => n
-        .Message("Vote for your candidate:")
+        .Title("Vote for your candidate:")
         .Option("1", "Candidate A").Action<VotingActionHandler>()
         .Option("2", "Candidate B").Action<VotingActionHandler>()
         .Option("3", "Candidate C").Action<VotingActionHandler>()
@@ -65,7 +65,7 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
 
     // Products menu with built-in pagination
     .Page(BankMenuNode.Products, n => n
-        .Message("Our Products:")
+        .Title("Our Products:")
         .OptionList(products, p => $"{p.Name} - GHS {p.Price}", autoPaginate: true, itemsPerPage: 3)
     )
 
