@@ -81,7 +81,11 @@ var ussdOptions = new UssdOptions
     ItemsPerPage = 5,
     InvalidInputMessage = "Invalid input. Please try again.",
     DefaultEndMessage = "Thank you for using our service.",
-    EnableAutoBackNavigation = true
+    EnableAutoBackNavigation = true,
+    EnableSessionResumption = true,
+    ResumeSessionPrompt = "You have an active session.",
+    ResumeOptionLabel = "Resume",
+    StartFreshOptionLabel = "Start Again",
 };
 
 builder.Services.AddUssdSdk(menu, ussdOptions);

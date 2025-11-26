@@ -11,16 +11,27 @@ public class UssdSession
     public string Network { get; init; }
     public int Level { get; set; } = 1;
     public int Part { get; set; } = 1;
-    public string CurrentStep { get; set; } = "main";
+    public string CurrentStep { get; set; }
     public DateTime ExpireAt { get; set; }
     public IDictionary<string, object?> Data { get; } = new Dictionary<string, object?>();
 
-    public UssdSession(string sessionId, string msisdn, string userId, string network)
+    /// <summary>
+    /// Indicates if the session is waiting for resume/fresh choice
+    /// </summary>
+    public bool AwaitingResumeChoice { get; set; } = false;
+
+    /// <summary>
+    /// Stores the previous state before showing resume prompt
+    /// </summary>
+    public string? PreviousStep { get; set; }
+
+    public UssdSession(string sessionId, string msisdn, string userId, string network, string? initialStep = null)
     {
         SessionId = sessionId;
         Msisdn = msisdn;
         UserId = userId;
         Network = network;
+        CurrentStep = initialStep ?? "main"; // Fallback to "main" for backward compatibility
         ExpireAt = DateTime.UtcNow.AddMinutes(2);
     }
 

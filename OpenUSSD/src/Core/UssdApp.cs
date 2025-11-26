@@ -36,17 +36,55 @@ namespace OpenUSSD.Core
         /// </summary>
         public async Task<UssdResponseDto> HandleRequestAsync(UssdRequestDto request)
         {
-            var session = await _sessionStore.GetAsync(request.SessionID) ?? new UssdSession(
+            var existingSession = await _sessionStore.GetAsync(request.SessionID);
+
+            UssdStepResult response;
+
+            // Handle session resumption logic
+            if (request.NewSession && existingSession != null && _options.EnableSessionResumption)
+            {
+                // Check if session is not expired and not at home
+                if (existingSession.ExpireAt > DateTime.UtcNow && existingSession.CurrentStep != _menu.RootId)
+                {
+                    // Store the current state and ask user to resume or start fresh
+                    existingSession.AwaitingResumeChoice = true;
+                    existingSession.PreviousStep = existingSession.CurrentStep;
+
+                    // Build the resume prompt message
+                    var resumeMessage = $"{_options.ResumeSessionPrompt}\n1. {_options.ResumeOptionLabel}\n2. {_options.StartFreshOptionLabel}";
+
+                    response = new UssdStepResult
+                    {
+                        Message = resumeMessage,
+                        ContinueSession = true
+                    };
+
+                    await _sessionStore.SetAsync(existingSession, _options.SessionTimeout);
+
+                    return new UssdResponseDto
+                    {
+                        SessionID = request.SessionID,
+                        UserID = request.UserID,
+                        ContinueSession = response.ContinueSession,
+                        Msisdn = request.Msisdn,
+                        Message = response.Message
+                    };
+                }
+            }
+
+            var session = existingSession ?? new UssdSession(
                 request.SessionID,
                 request.Msisdn,
                 request.UserID,
-                request.Network
+                request.Network,
+                _menu.RootId  // Pass the correct root ID from the menu
             );
 
-            UssdStepResult response;
             if (request.NewSession)
             {
                 session.CurrentStep = _menu.RootId;
+                session.AwaitingResumeChoice = false;
+                session.PreviousStep = null;
                 response = RenderMenu(session);
             }
             else
@@ -83,6 +121,40 @@ namespace OpenUSSD.Core
 
         private async Task<UssdStepResult> ProcessRequest(UssdSession session, string input)
         {
+            // Handle resume choice if awaiting
+            if (session.AwaitingResumeChoice)
+            {
+                if (input == "1") // Resume
+                {
+                    session.AwaitingResumeChoice = false;
+                    if (!string.IsNullOrEmpty(session.PreviousStep))
+                    {
+                        session.CurrentStep = session.PreviousStep;
+                        session.PreviousStep = null;
+                    }
+                    return RenderMenu(session, "Resuming your session...\n");
+                }
+                else if (input == "2") // Start Fresh
+                {
+                    session.AwaitingResumeChoice = false;
+                    session.PreviousStep = null;
+                    session.CurrentStep = _menu.RootId;
+                    session.Level = 1;
+                    session.Data.Clear(); // Clear all session data
+                    return RenderMenu(session);
+                }
+                else
+                {
+                    // Invalid choice, show prompt again
+                    var resumeMessage = $"{_options.ResumeSessionPrompt}\n1. {_options.ResumeOptionLabel}\n2. {_options.StartFreshOptionLabel}";
+                    return new UssdStepResult
+                    {
+                        Message = $"{_options.InvalidInputMessage}\n{resumeMessage}",
+                        ContinueSession = true
+                    };
+                }
+            }
+
             var currentNode = _menu.GetNode(session.CurrentStep);
 
             // Handle back navigation

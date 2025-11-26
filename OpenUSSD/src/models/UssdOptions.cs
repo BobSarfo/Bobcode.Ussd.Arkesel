@@ -54,5 +54,27 @@ public class UssdOptions
     /// Enable automatic back navigation handling
     /// </summary>
     public bool EnableAutoBackNavigation { get; set; } = true;
+
+    /// <summary>
+    /// Enable session resumption. When true, if a new session request comes in
+    /// but an existing session exists, the user will be asked whether to resume
+    /// the existing session or start fresh.
+    /// </summary>
+    public bool EnableSessionResumption { get; set; } = false;
+
+    /// <summary>
+    /// Header message displayed when asking user to resume or start fresh
+    /// </summary>
+    public string ResumeSessionPrompt { get; set; } = "You have an active session.";
+
+    /// <summary>
+    /// Label for the resume option (default: "Resume")
+    /// </summary>
+    public string ResumeOptionLabel { get; set; } = "Resume";
+
+    /// <summary>
+    /// Label for the start fresh option (default: "Start Fresh")
+    /// </summary>
+    public string StartFreshOptionLabel { get; set; } = "Start Fresh";
 }
 
