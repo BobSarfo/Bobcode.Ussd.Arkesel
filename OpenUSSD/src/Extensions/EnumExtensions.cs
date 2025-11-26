@@ -1,35 +1,35 @@
 namespace OpenUSSD.Extensions;
 
 /// <summary>
-/// Extension methods for enum-based menu nodes
+/// Extension methods for enum-based menu pages
 /// </summary>
 public static class EnumExtensions
 {
     /// <summary>
-    /// Converts an enum value to a node ID string
+    /// Converts an enum value to a page ID string
     /// </summary>
-    public static string ToNodeId<TEnum>(this TEnum enumValue) where TEnum : struct, Enum
+    public static string ToPageId<TEnum>(this TEnum enumValue) where TEnum : struct, Enum
     {
         return enumValue.ToString();
     }
 
     /// <summary>
-    /// Tries to parse a node ID string to an enum value
+    /// Tries to parse a page ID string to an enum value
     /// </summary>
-    public static bool TryParseNodeId<TEnum>(string nodeId, out TEnum result) where TEnum : struct, Enum
+    public static bool TryParsePageId<TEnum>(string pageId, out TEnum result) where TEnum : struct, Enum
     {
-        return Enum.TryParse(nodeId, true, out result);
+        return Enum.TryParse(pageId, true, out result);
     }
 
     /// <summary>
-    /// Parses a node ID string to an enum value
+    /// Parses a page ID string to an enum value
     /// </summary>
-    public static TEnum ParseNodeId<TEnum>(string nodeId) where TEnum : struct, Enum
+    public static TEnum ParsePageId<TEnum>(string pageId) where TEnum : struct, Enum
     {
-        if (Enum.TryParse<TEnum>(nodeId, true, out var result))
+        if (Enum.TryParse<TEnum>(pageId, true, out var result))
             return result;
         
-        throw new ArgumentException($"Invalid node ID '{nodeId}' for enum type {typeof(TEnum).Name}");
+        throw new ArgumentException($"Invalid page ID '{pageId}' for enum type {typeof(TEnum).Name}");
     }
 }
 

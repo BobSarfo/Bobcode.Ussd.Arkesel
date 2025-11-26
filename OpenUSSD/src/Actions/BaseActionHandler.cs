@@ -64,13 +64,13 @@ public abstract class BaseActionHandler : IActionHandler
         };
 
     /// <summary>
-    /// Helper method to navigate to a specific menu node using enum
+    /// Helper method to navigate to a specific menu page using enum
     /// </summary>
-    protected UssdStepResult GoTo<TNode>(TNode node) where TNode : struct, Enum
+    protected UssdStepResult GoTo<TNode>(TNode page) where TNode : struct, Enum
         => new UssdStepResult
         {
             ContinueSession = true,
-            NextStep = node.ToNodeId()
+            NextStep = page.ToPageId()
         };
 
     /// <summary>

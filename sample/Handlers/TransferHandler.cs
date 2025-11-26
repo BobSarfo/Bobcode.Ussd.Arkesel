@@ -52,8 +52,8 @@ public class TransferAmountHandler : BaseActionHandler
         var recipient = Get(context, SessionKeys.Recipient);
         var confirmMessage = $"Confirm transfer:\nTo: {recipient}\nAmount: GHS {amount:F2}\n\n1. Confirm\n2. Cancel";
 
-        // Navigate to confirmation node with custom message
-        return Task.FromResult(Continue(confirmMessage, BankMenuNode.TransferConfirm.ToNodeId()));
+        // Navigate to confirmation page with custom message
+        return Task.FromResult(Continue(confirmMessage, BankMenuNode.TransferConfirm.ToPageId()));
     }
 }
 

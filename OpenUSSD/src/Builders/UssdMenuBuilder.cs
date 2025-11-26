@@ -7,7 +7,7 @@ namespace OpenUSSD.Builders;
 /// <summary>
 /// Strongly-typed fluent builder for creating USSD menu structures
 /// </summary>
-/// <typeparam name="TNode">The enum type representing menu nodes</typeparam>
+/// <typeparam name="TNode">The enum type representing menu pages</typeparam>
 public class UssdMenuBuilder<TNode> where TNode : struct, Enum
 {
     private readonly Menu _menu;
@@ -19,22 +19,22 @@ public class UssdMenuBuilder<TNode> where TNode : struct, Enum
     }
 
     /// <summary>
-    /// Sets the root node for the menu
+    /// Sets the root page for the menu
     /// </summary>
-    public UssdMenuBuilder<TNode> Root(TNode node)
+    public UssdMenuBuilder<TNode> Root(TNode page)
     {
-        _rootNode = node;
-        _menu.RootId = node.ToNodeId();
+        _rootNode = page;
+        _menu.RootId = page.ToPageId();
         return this;
     }
 
     /// <summary>
-    /// Adds a menu node with fluent configuration
+    /// Adds a menu page with fluent configuration
     /// </summary>
-    public UssdMenuBuilder<TNode> Node(TNode node, Action<NodeBuilder<TNode>> configure)
+    public UssdMenuBuilder<TNode> Page(TNode page, Action<PageBuilder<TNode>> configure)
     {
-        var nodeBuilder = new NodeBuilder<TNode>(node, _menu);
-        configure(nodeBuilder);
+        var pageBuilder = new PageBuilder<TNode>(page, _menu);
+        configure(pageBuilder);
         return this;
     }
 
@@ -44,47 +44,47 @@ public class UssdMenuBuilder<TNode> where TNode : struct, Enum
     public Menu Build()
     {
         if (_rootNode == null)
-            throw new InvalidOperationException("Root node must be set before building the menu.");
+            throw new InvalidOperationException("Root page must be set before building the menu.");
 
-        if (!_menu.Nodes.ContainsKey(_menu.RootId))
-            throw new InvalidOperationException($"Root node '{_rootNode}' has not been configured.");
+        if (!_menu.Pages.ContainsKey(_menu.RootId))
+            throw new InvalidOperationException($"Root page '{_rootNode}' has not been configured.");
 
         return _menu;
     }
 }
 
 /// <summary>
-/// Builder for configuring a single menu node
+/// Builder for configuring a single menu page
 /// </summary>
-public class NodeBuilder<TNode> where TNode : struct, Enum
+public class PageBuilder<TNode> where TNode : struct, Enum
 {
-    private readonly TNode _node;
+    private readonly TNode _page;
     private readonly Menu _menu;
-    private readonly MenuNode _menuNode;
+    private readonly MenuPage _menuPage;
     private readonly List<string> _messageLines = new();
 
-    internal NodeBuilder(TNode node, Menu menu)
+    internal PageBuilder(TNode page, Menu menu)
     {
-        _node = node;
+        _page = page;
         _menu = menu;
-        var nodeId = node.ToNodeId();
+        var pageId = page.ToPageId();
         
-        // Create or get existing node
-        if (!_menu.Nodes.TryGetValue(nodeId, out var existingNode))
+        // Create or get existing page
+        if (!_menu.Pages.TryGetValue(pageId, out var existingPage))
         {
-            _menuNode = new MenuNode(nodeId, "");
-            _menu.Nodes[nodeId] = _menuNode;
+            _menuPage = new MenuPage(pageId, "");
+            _menu.Pages[pageId] = _menuPage;
         }
         else
         {
-            _menuNode = existingNode;
+            _menuPage = existingPage;
         }
     }
 
     /// <summary>
-    /// Sets the message text for this node
+    /// Sets the message text for this page
     /// </summary>
-    public NodeBuilder<TNode> Message(string message)
+    public PageBuilder<TNode> Message(string message)
     {
         _messageLines.Add(message);
         UpdateTitle();
@@ -94,7 +94,7 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
     /// <summary>
     /// Adds a line to the message
     /// </summary>
-    public NodeBuilder<TNode> Line(string line)
+    public PageBuilder<TNode> Line(string line)
     {
         _messageLines.Add(line);
         UpdateTitle();
@@ -102,16 +102,16 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
     }
 
     /// <summary>
-    /// Marks this node as terminal (ends the session)
+    /// Marks this page as terminal (ends the session)
     /// </summary>
-    public NodeBuilder<TNode> Terminal()
+    public PageBuilder<TNode> Terminal()
     {
-        _menuNode.IsTerminal = true;
+        _menuPage.IsTerminal = true;
         return this;
     }
 
     /// <summary>
-    /// Adds an option to this node
+    /// Adds an option to this page
     /// </summary>
     public OptionBuilder<TNode> Option(string input, string label)
     {
@@ -121,7 +121,7 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
     /// <summary>
     /// Adds a paginated list of items as options
     /// </summary>
-    public NodeBuilder<TNode> OptionList<T>(
+    public PageBuilder<TNode> OptionList<T>(
         IEnumerable<T> items,
         Func<T, string> labelSelector,
         bool autoPaginate = true,
@@ -142,9 +142,9 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
         }
         else
         {
-            // Mark this node for pagination
-            _menuNode.IsPaginated = true;
-            _menuNode.ItemsPerPage = itemsPerPage;
+            // Mark this page for pagination
+            _menuPage.IsPaginated = true;
+            _menuPage.ItemsPerPage = itemsPerPage;
             
             // Store items for pagination (will be handled by UssdApp)
             for (int i = 0; i < itemList.Count; i++)
@@ -172,15 +172,15 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
 
     internal void AddOption(MenuOption option)
     {
-        _menuNode.Options.Add(option);
+        _menuPage.Options.Add(option);
     }
 
     private void UpdateTitle()
     {
-        _menuNode.Title = string.Join("\n", _messageLines);
+        _menuPage.Title = string.Join("\n", _messageLines);
     }
 
-    internal NodeBuilder<TNode> GetThis() => this;
+    internal PageBuilder<TNode> GetThis() => this;
 }
 
 /// <summary>
@@ -188,60 +188,60 @@ public class NodeBuilder<TNode> where TNode : struct, Enum
 /// </summary>
 public class OptionBuilder<TNode> where TNode : struct, Enum
 {
-    private readonly NodeBuilder<TNode> _nodeBuilder;
+    private readonly PageBuilder<TNode> _pageBuilder;
     private readonly string _input;
     private readonly string _label;
     private readonly bool _isWildcard;
     private string? _targetStep;
     private string? _actionKey;
 
-    internal OptionBuilder(NodeBuilder<TNode> nodeBuilder, string input, string label, bool isWildcard = false)
+    internal OptionBuilder(PageBuilder<TNode> pageBuilder, string input, string label, bool isWildcard = false)
     {
-        _nodeBuilder = nodeBuilder;
+        _pageBuilder = pageBuilder;
         _input = input;
         _label = label;
         _isWildcard = isWildcard;
     }
 
     /// <summary>
-    /// Navigates to another node when this option is selected
+    /// Navigates to another page when this option is selected
     /// </summary>
-    public NodeBuilder<TNode> GoTo(TNode targetNode)
+    public PageBuilder<TNode> GoTo(TNode targetPage)
     {
-        _targetStep = targetNode.ToNodeId();
+        _targetStep = targetPage.ToPageId();
         Commit();
-        return _nodeBuilder;
+        return _pageBuilder;
     }
 
     /// <summary>
     /// Executes an action handler when this option is selected
     /// </summary>
-    public NodeBuilder<TNode> Action<THandler>() where THandler : IActionHandler
+    public PageBuilder<TNode> Action<THandler>() where THandler : IActionHandler
     {
         _actionKey = Attributes.UssdActionAttribute.GetActionKey(typeof(THandler));
         Commit();
-        return _nodeBuilder;
+        return _pageBuilder;
     }
 
     /// <summary>
     /// Executes an action handler with a specific key
     /// </summary>
-    public NodeBuilder<TNode> Action(string actionKey)
+    public PageBuilder<TNode> Action(string actionKey)
     {
         _actionKey = actionKey;
         Commit();
-        return _nodeBuilder;
+        return _pageBuilder;
     }
 
     /// <summary>
-    /// Navigates to a node and executes an action
+    /// Navigates to a page and executes an action
     /// </summary>
-    public NodeBuilder<TNode> GoToAndAction<THandler>(TNode targetNode) where THandler : IActionHandler
+    public PageBuilder<TNode> GoToAndAction<THandler>(TNode targetPage) where THandler : IActionHandler
     {
-        _targetStep = targetNode.ToNodeId();
+        _targetStep = targetPage.ToPageId();
         _actionKey = Attributes.UssdActionAttribute.GetActionKey(typeof(THandler));
         Commit();
-        return _nodeBuilder;
+        return _pageBuilder;
     }
 
     private void Commit()
@@ -254,7 +254,7 @@ public class OptionBuilder<TNode> where TNode : struct, Enum
             ActionKey = _actionKey,
             IsWildcard = _isWildcard
         };
-        _nodeBuilder.AddOption(option);
+        _pageBuilder.AddOption(option);
     }
 }
 

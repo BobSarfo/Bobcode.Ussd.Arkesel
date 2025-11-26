@@ -12,7 +12,7 @@ public class MenuBuilder
     public MenuBuilder(string menuId) => _menu = new Menu(menuId);
 
     /// <summary>
-    /// Sets the root node ID for the menu
+    /// Sets the root page ID for the menu
     /// </summary>
     public MenuBuilder SetRoot(string rootId)
     {
@@ -21,42 +21,42 @@ public class MenuBuilder
     }
 
     /// <summary>
-    /// Adds a menu node
+    /// Adds a menu page
     /// </summary>
-    /// <param name="id">Unique identifier for the node</param>
+    /// <param name="id">Unique identifier for the page</param>
     /// <param name="title">Title/header text displayed to the user</param>
-    /// <param name="isTerminal">Whether this node ends the session</param>
-    public MenuBuilder AddNode(string id, string title, bool isTerminal = false)
+    /// <param name="isTerminal">Whether this page ends the session</param>
+    public MenuBuilder AddPage(string id, string title, bool isTerminal = false)
     {
-        var node = new MenuNode(id, title) { IsTerminal = isTerminal };
-        _menu.Nodes[id] = node;
+        var page = new MenuPage(id, title) { IsTerminal = isTerminal };
+        _menu.Pages[id] = page;
         return this;
     }
 
     /// <summary>
-    /// Adds an option to a menu node
+    /// Adds an option to a menu page
     /// </summary>
-    /// <param name="nodeId">The node to add the option to</param>
+    /// <param name="pageId">The page to add the option to</param>
     /// <param name="input">The input value the user enters (use "*" for wildcard/any input)</param>
     /// <param name="label">The label displayed to the user</param>
-    /// <param name="targetStep">The node to navigate to when selected</param>
+    /// <param name="targetStep">The page to navigate to when selected</param>
     /// <param name="actionKey">The action handler key to execute when selected</param>
     /// <param name="isWildcard">If true, this option accepts any user input</param>
     public MenuBuilder AddOption(
-        string nodeId,
+        string pageId,
         string input,
         string label,
         string? targetStep = null,
         string? actionKey = null,
         bool isWildcard = false)
     {
-        if (!_menu.Nodes.ContainsKey(nodeId))
+        if (!_menu.Pages.ContainsKey(pageId))
         {
-            throw new InvalidOperationException($"Node '{nodeId}' does not exist. Add the node before adding options.");
+            throw new InvalidOperationException($"Page '{pageId}' does not exist. Add the page before adding options.");
         }
 
-        var node = _menu.Nodes[nodeId];
-        node.Options.Add(new MenuOption
+        var page = _menu.Pages[pageId];
+        page.Options.Add(new MenuOption
         {
             Input = input,
             Label = label,
@@ -68,13 +68,13 @@ public class MenuBuilder
     }
 
     /// <summary>
-    /// Adds multiple options to a menu node
+    /// Adds multiple options to a menu page
     /// </summary>
-    public MenuBuilder AddOptions(string nodeId, params (string input, string label, string? targetStep, string? actionKey)[] options)
+    public MenuBuilder AddOptions(string pageId, params (string input, string label, string? targetStep, string? actionKey)[] options)
     {
         foreach (var (input, label, targetStep, actionKey) in options)
         {
-            AddOption(nodeId, input, label, targetStep, actionKey);
+            AddOption(pageId, input, label, targetStep, actionKey);
         }
         return this;
     }
@@ -84,10 +84,10 @@ public class MenuBuilder
     /// </summary>
     public Menu Build()
     {
-        // Validate that root node exists
-        if (!_menu.Nodes.ContainsKey(_menu.RootId))
+        // Validate that root page exists
+        if (!_menu.Pages.ContainsKey(_menu.RootId))
         {
-            throw new InvalidOperationException($"Root node '{_menu.RootId}' does not exist in the menu.");
+            throw new InvalidOperationException($"Root page '{_menu.RootId}' does not exist in the menu.");
         }
 
         return _menu;

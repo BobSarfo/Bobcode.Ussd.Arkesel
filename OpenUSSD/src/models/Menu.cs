@@ -1,7 +1,7 @@
 namespace OpenUSSD.models;
 
 /// <summary>
-/// Represents a USSD menu structure with multiple nodes
+/// Represents a USSD menu structure with multiple pages
 /// </summary>
 public class Menu
 {
@@ -11,45 +11,45 @@ public class Menu
     public string Id { get; init; }
 
     /// <summary>
-    /// Collection of menu nodes indexed by their ID
+    /// Collection of menu pages indexed by their ID
     /// </summary>
-    public Dictionary<string, MenuNode> Nodes { get; } = new();
+    public Dictionary<string, MenuPage> Pages { get; } = new();
 
     /// <summary>
-    /// ID of the root/starting node
+    /// ID of the root/starting page
     /// </summary>
     public string RootId { get; set; } = "main";
 
     public Menu(string id) => Id = id;
 
     /// <summary>
-    /// Gets a menu node by ID
+    /// Gets a menu page by ID
     /// </summary>
-    /// <param name="id">The node ID</param>
-    /// <returns>The menu node</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when node ID doesn't exist</exception>
-    public MenuNode GetNode(string id)
+    /// <param name="id">The page ID</param>
+    /// <returns>The menu page</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when page ID doesn't exist</exception>
+    public MenuPage GetPage(string id)
     {
-        if (!Nodes.TryGetValue(id, out var node))
+        if (!Pages.TryGetValue(id, out var page))
         {
-            throw new KeyNotFoundException($"Menu node '{id}' not found in menu '{Id}'.");
+            throw new KeyNotFoundException($"Menu page '{id}' not found in menu '{Id}'.");
         }
-        return node;
+        return page;
     }
 
     /// <summary>
-    /// Tries to get a menu node by ID
+    /// Tries to get a menu page by ID
     /// </summary>
-    /// <param name="id">The node ID</param>
-    /// <param name="node">The menu node if found</param>
-    /// <returns>True if node exists, false otherwise</returns>
-    public bool TryGetNode(string id, out MenuNode? node)
+    /// <param name="id">The page ID</param>
+    /// <param name="page">The menu page if found</param>
+    /// <returns>True if page exists, false otherwise</returns>
+    public bool TryGetPage(string id, out MenuPage? page)
     {
-        return Nodes.TryGetValue(id, out node);
+        return Pages.TryGetValue(id, out page);
     }
 
     /// <summary>
-    /// Checks if a node exists in the menu
+    /// Checks if a page exists in the menu
     /// </summary>
-    public bool HasNode(string id) => Nodes.ContainsKey(id);
+    public bool HasPage(string id) => Pages.ContainsKey(id);
 }

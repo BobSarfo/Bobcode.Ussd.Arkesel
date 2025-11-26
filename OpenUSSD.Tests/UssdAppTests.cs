@@ -25,11 +25,11 @@ public class UssdAppTests
         _logger = _serviceProvider.GetRequiredService<ILogger<UssdApp>>();
 
         _menu = new MenuBuilder("test-menu")
-            .AddNode("main", "Welcome to Test App")
+            .AddPage("main", "Welcome to Test App")
             .AddOption("main", "1", "Option 1", "step1")
             .AddOption("main", "2", "Option 2", "step2")
-            .AddNode("step1", "You selected Option 1", isTerminal: true)
-            .AddNode("step2", "You selected Option 2")
+            .AddPage("step1", "You selected Option 1", isTerminal: true)
+            .AddPage("step2", "You selected Option 2")
             .AddOption("step2", "1", "Sub Option 1", actionKey: "test_action")
             .Build();
     }

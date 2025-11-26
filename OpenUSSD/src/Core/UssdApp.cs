@@ -155,7 +155,7 @@ namespace OpenUSSD.Core
                 }
             }
 
-            var currentNode = _menu.GetNode(session.CurrentStep);
+            var currentPage = _menu.GetPage(session.CurrentStep);
 
             // Handle back navigation
             if (input == _options.BackCommand && session.Level > 1)
@@ -170,12 +170,12 @@ namespace OpenUSSD.Core
             }
 
             // First try exact match (non-wildcard options)
-            var option = currentNode.Options.FirstOrDefault(o => !o.IsWildcard && o.Input == input);
+            var option = currentPage.Options.FirstOrDefault(o => !o.IsWildcard && o.Input == input);
 
             // If no exact match, try wildcard option (accepts any input)
             if (option == null)
             {
-                option = currentNode.Options.FirstOrDefault(o => o.IsWildcard);
+                option = currentPage.Options.FirstOrDefault(o => o.IsWildcard);
             }
 
             if (option == null)
@@ -243,7 +243,7 @@ namespace OpenUSSD.Core
 
         private UssdStepResult RenderMenu(UssdSession session, string? prefix = null)
         {
-            var node = _menu.GetNode(session.CurrentStep);
+            var page = _menu.GetPage(session.CurrentStep);
             var sb = new StringBuilder();
 
             if (prefix != null)
@@ -251,10 +251,10 @@ namespace OpenUSSD.Core
                 sb.AppendLine(prefix);
             }
 
-            sb.AppendLine(node.Title);
+            sb.AppendLine(page.Title);
 
             // Check if pagination is needed
-            var options = node.Options.ToList();
+            var options = page.Options.ToList();
             if (_options.EnablePagination && options.Count > _options.ItemsPerPage)
             {
                 var currentPage = session.Part;
@@ -288,7 +288,7 @@ namespace OpenUSSD.Core
             return new UssdStepResult
             {
                 Message = sb.ToString().TrimEnd(),
-                ContinueSession = !node.IsTerminal
+                ContinueSession = !page.IsTerminal
             };
         }
 

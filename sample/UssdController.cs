@@ -5,7 +5,7 @@ using OpenUSSD.models;
 namespace Sample;
 
 /// <summary>
-/// USSD Controller demonstrating the refactored OpenUSSD SDK
+/// USSD Controller demonstrating the OpenUSSD SDK
 /// </summary>
 [ApiController]
 [Route("[controller]")]
