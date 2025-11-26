@@ -97,7 +97,14 @@ namespace OpenUSSD.Core
                 return UssdStepResult.Home();
             }
 
-            var option = currentNode.Options.FirstOrDefault(o => o.Input == input);
+            // First try exact match (non-wildcard options)
+            var option = currentNode.Options.FirstOrDefault(o => !o.IsWildcard && o.Input == input);
+
+            // If no exact match, try wildcard option (accepts any input)
+            if (option == null)
+            {
+                option = currentNode.Options.FirstOrDefault(o => o.IsWildcard);
+            }
 
             if (option == null)
             {

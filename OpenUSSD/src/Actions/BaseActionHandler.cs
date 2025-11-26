@@ -1,3 +1,4 @@
+using OpenUSSD.Attributes;
 using OpenUSSD.models;
 
 namespace OpenUSSD.Actions;
@@ -7,10 +8,23 @@ namespace OpenUSSD.Actions;
 /// </summary>
 public abstract class BaseActionHandler : IActionHandler
 {
+    private string? _cachedKey;
+
     /// <summary>
-    /// Unique key identifying this action handler
+    /// Unique key identifying this action handler.
+    /// Auto-generated from class name or [UssdAction] attribute.
     /// </summary>
-    public abstract string Key { get; }
+    public virtual string Key
+    {
+        get
+        {
+            if (_cachedKey == null)
+            {
+                _cachedKey = UssdActionAttribute.GetActionKey(GetType());
+            }
+            return _cachedKey;
+        }
+    }
 
     /// <summary>
     /// Handles the action and returns the result
@@ -49,7 +63,7 @@ public abstract class BaseActionHandler : IActionHandler
         };
 
     /// <summary>
-    /// Helper method to get session data
+    /// Helper method to get session data using a string key (legacy)
     /// </summary>
     protected T? GetSessionData<T>(UssdContext context, string key)
     {
@@ -61,10 +75,50 @@ public abstract class BaseActionHandler : IActionHandler
     }
 
     /// <summary>
-    /// Helper method to set session data
+    /// Helper method to set session data using a string key (legacy)
     /// </summary>
     protected void SetSessionData(UssdContext context, string key, object? value)
     {
         context.Session.Data[key] = value;
+    }
+
+    /// <summary>
+    /// Helper method to get strongly-typed session data
+    /// </summary>
+    protected T? Get<T>(UssdContext context, SessionKey<T> key)
+    {
+        return context.Session.Get(key);
+    }
+
+    /// <summary>
+    /// Helper method to set strongly-typed session data
+    /// </summary>
+    protected void Set<T>(UssdContext context, SessionKey<T> key, T value)
+    {
+        context.Session.Set(key, value);
+    }
+
+    /// <summary>
+    /// Helper method to get strongly-typed session data with default value
+    /// </summary>
+    protected T GetOrDefault<T>(UssdContext context, SessionKey<T> key, T defaultValue)
+    {
+        return context.Session.GetOrDefault(key, defaultValue);
+    }
+
+    /// <summary>
+    /// Helper method to check if a session key exists
+    /// </summary>
+    protected bool Has<T>(UssdContext context, SessionKey<T> key)
+    {
+        return context.Session.Has(key);
+    }
+
+    /// <summary>
+    /// Helper method to remove a session key
+    /// </summary>
+    protected void Remove<T>(UssdContext context, SessionKey<T> key)
+    {
+        context.Session.Remove(key);
     }
 }

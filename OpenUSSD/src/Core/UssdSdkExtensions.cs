@@ -1,5 +1,7 @@
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using OpenUSSD.Actions;
+using OpenUSSD.Attributes;
 using OpenUSSD.Core;
 using OpenUSSD.models;
 
@@ -63,5 +65,41 @@ public static class UssdSdkExtensions
     {
         services.AddSingleton<IActionHandler, THandler>();
         return services;
+    }
+
+    /// <summary>
+    /// Auto-discovers and registers all action handlers from the specified assembly.
+    /// Handlers must implement IActionHandler and be marked with [UssdAction] attribute.
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <param name="assembly">The assembly to scan for action handlers</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddUssdActionsFromAssembly(
+        this IServiceCollection services,
+        Assembly assembly)
+    {
+        var handlerTypes = assembly.GetTypes()
+            .Where(t => !t.IsAbstract && !t.IsInterface)
+            .Where(t => typeof(IActionHandler).IsAssignableFrom(t))
+            .Where(t => t.GetCustomAttribute<UssdActionAttribute>() != null);
+
+        foreach (var handlerType in handlerTypes)
+        {
+            services.AddSingleton(typeof(IActionHandler), handlerType);
+        }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Auto-discovers and registers all action handlers from the calling assembly.
+    /// Handlers must implement IActionHandler and be marked with [UssdAction] attribute.
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddUssdActionsFromCallingAssembly(this IServiceCollection services)
+    {
+        var callingAssembly = Assembly.GetCallingAssembly();
+        return services.AddUssdActionsFromAssembly(callingAssembly);
     }
 }

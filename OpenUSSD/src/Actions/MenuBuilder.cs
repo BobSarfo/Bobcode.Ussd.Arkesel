@@ -37,16 +37,18 @@ public class MenuBuilder
     /// Adds an option to a menu node
     /// </summary>
     /// <param name="nodeId">The node to add the option to</param>
-    /// <param name="input">The input value the user enters</param>
+    /// <param name="input">The input value the user enters (use "*" for wildcard/any input)</param>
     /// <param name="label">The label displayed to the user</param>
     /// <param name="targetStep">The node to navigate to when selected</param>
     /// <param name="actionKey">The action handler key to execute when selected</param>
+    /// <param name="isWildcard">If true, this option accepts any user input</param>
     public MenuBuilder AddOption(
         string nodeId,
         string input,
         string label,
         string? targetStep = null,
-        string? actionKey = null)
+        string? actionKey = null,
+        bool isWildcard = false)
     {
         if (!_menu.Nodes.ContainsKey(nodeId))
         {
@@ -59,7 +61,8 @@ public class MenuBuilder
             Input = input,
             Label = label,
             TargetStep = targetStep,
-            ActionKey = actionKey
+            ActionKey = actionKey,
+            IsWildcard = isWildcard || input == "*" // Auto-detect wildcard from "*" input
         });
         return this;
     }

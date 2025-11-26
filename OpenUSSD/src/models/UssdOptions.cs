@@ -49,5 +49,10 @@ public class UssdOptions
     /// Command to navigate to previous page (e.g., "*")
     /// </summary>
     public string PreviousPageCommand { get; set; } = "*";
+
+    /// <summary>
+    /// Enable automatic back navigation handling
+    /// </summary>
+    public bool EnableAutoBackNavigation { get; set; } = true;
 }
 

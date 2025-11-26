@@ -1,6 +1,7 @@
 using OpenUSSD.Core;
-using OpenUSSD.Actions;
+using OpenUSSD.Builders;
 using OpenUSSD.models;
+using Sample;
 using Sample.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,30 +11,50 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Build the USSD menu using MenuBuilder
-var menu = new MenuBuilder("demo_bank_menu")
-    // Root menu
-    .SetRoot("main")
-    .AddNode("main", "Welcome to Demo Bank\n1. Check Balance\n2. Transfer Money\n3. Vote\n4. View Products")
+// Sample product data for pagination demo
+var products = new[]
+{
+    new { Name = "Product A", Price = 10m },
+    new { Name = "Product B", Price = 20m },
+    new { Name = "Product C", Price = 30m },
+    new { Name = "Product D", Price = 40m },
+    new { Name = "Product E", Price = 50m },
+    new { Name = "Product F", Price = 60m },
+    new { Name = "Product G", Price = 70m },
+};
 
-    // Balance check flow
-    .AddOption("main", "1", "Check Balance", actionKey: nameof(BalanceCheckHandler))
+// Build the USSD menu using strongly-typed MenuBuilder
+var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
+    .Root(BankMenuNode.Main)
+
+    // Main menu
+    .Node(BankMenuNode.Main, n => n
+        .Message("Welcome to Demo Bank")
+        .Option("1", "Check Balance").Action<BalanceCheckHandler>()
+        .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
+        .Option("3", "Vote").GoTo(BankMenuNode.VoteMenu)
+        .Option("4", "View Products").GoTo(BankMenuNode.Products)
+    )
 
     // Transfer flow
-    .AddOption("main", "2", "Transfer Money", targetStep: "transfer_recipient")
-    .AddNode("transfer_recipient", "Enter recipient phone number:")
-    .AddOption("transfer_recipient", "*", "Any input", actionKey: "transfer")
+    .Node(BankMenuNode.TransferRecipient, n => n
+        .Message("Enter recipient phone number:")
+        .Input().Action<TransferHandler>()
+    )
 
-    // Voting flow
-    .AddOption("main", "3", "Vote", targetStep: "vote_menu")
-    .AddNode("vote_menu", "Vote for your candidate:\n1. Candidate A\n2. Candidate B\n3. Candidate C")
-    .AddOption("vote_menu", "1", "Candidate A", actionKey: "vote")
-    .AddOption("vote_menu", "2", "Candidate B", actionKey: "vote")
-    .AddOption("vote_menu", "3", "Candidate C", actionKey: "vote")
+    // Voting menu
+    .Node(BankMenuNode.VoteMenu, n => n
+        .Message("Vote for your candidate:")
+        .Option("1", "Candidate A").Action<VotingActionHandler>()
+        .Option("2", "Candidate B").Action<VotingActionHandler>()
+        .Option("3", "Candidate C").Action<VotingActionHandler>()
+    )
 
-    // Products menu with pagination example
-    .AddOption("main", "4", "View Products", targetStep: "products")
-    .AddNode("products", "Our Products:\n1. Product A - GHS 10\n2. Product B - GHS 20\n3. Product C - GHS 30\n4. Product D - GHS 40\n5. Product E - GHS 50")
+    // Products menu with built-in pagination
+    .Node(BankMenuNode.Products, n => n
+        .Message("Our Products:")
+        .OptionList(products, p => $"{p.Name} - GHS {p.Price}", autoPaginate: true, itemsPerPage: 3)
+    )
 
     .Build();
 
@@ -46,15 +67,14 @@ var ussdOptions = new UssdOptions
     EnablePagination = true,
     ItemsPerPage = 5,
     InvalidInputMessage = "Invalid input. Please try again.",
-    DefaultEndMessage = "Thank you for using our service."
+    DefaultEndMessage = "Thank you for using our service.",
+    EnableAutoBackNavigation = true
 };
 
 builder.Services.AddUssdSdk(menu, ussdOptions);
 
-// Register action handlers
-builder.Services.AddActionHandler<VotingActionHandler>();
-builder.Services.AddActionHandler<BalanceCheckHandler>();
-builder.Services.AddActionHandler<TransferHandler>();
+// Auto-discover and register all action handlers from this assembly
+builder.Services.AddUssdActionsFromAssembly(typeof(Program).Assembly);
 
 var app = builder.Build();
 
