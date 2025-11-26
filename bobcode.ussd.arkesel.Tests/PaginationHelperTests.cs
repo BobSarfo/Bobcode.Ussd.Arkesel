@@ -1,7 +1,7 @@
-using bobcode.ussd.arkesel.models;
-using bobcode.ussd.arkesel.Utilities;
+using Bobcode.Ussd.Arkesel.Models;
+using Bobcode.Ussd.Arkesel.Utilities;
 
-namespace bobcode.ussd.arkesel.Tests;
+namespace Bobcode.Ussd.Arkesel.Tests;
 
 public class PaginationHelperTests
 {

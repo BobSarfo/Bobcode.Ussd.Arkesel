@@ -1,8 +1,8 @@
 using System.Text.Json;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Models;
 using StackExchange.Redis;
 
-namespace bobcode.ussd.arkesel.Actions;
+namespace Bobcode.Ussd.Arkesel.Actions;
 
 public class RedisSessionStore : IUssdSessionStore
 {

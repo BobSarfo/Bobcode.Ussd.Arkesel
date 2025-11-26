@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.models;
+namespace Bobcode.Ussd.Arkesel.Models;
 
 /// <summary>
 /// Strongly-typed session key for type-safe session data access

@@ -1,6 +1,6 @@
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace bobcode.ussd.arkesel.Actions;
+namespace Bobcode.Ussd.Arkesel.Actions;
 
 /// <summary>
 /// Interface for handling USSD actions triggered by menu options

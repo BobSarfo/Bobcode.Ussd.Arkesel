@@ -1,7 +1,6 @@
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
 
-namespace bobcode.ussd.arkesel.Tests;
+namespace Bobcode.Ussd.Arkesel.Tests;
 
 public class MenuBuilderTests
 {

@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.models;
+namespace Bobcode.Ussd.Arkesel.Models;
 
 /// <summary>
 /// Represents a USSD menu structure with multiple pages

@@ -1,8 +1,10 @@
-using bobcode.ussd.arkesel.Attributes;
-using bobcode.ussd.arkesel.models;
-using bobcode.ussd.arkesel.Extensions;
 
-namespace bobcode.ussd.arkesel.Actions;
+
+using Bobcode.Ussd.Arkesel.Attributes;
+using Bobcode.Ussd.Arkesel.Extensions;
+using Bobcode.Ussd.Arkesel.Models;
+
+namespace Bobcode.Ussd.Arkesel.Actions;
 
 /// <summary>
 /// Base class for action handlers providing common functionality

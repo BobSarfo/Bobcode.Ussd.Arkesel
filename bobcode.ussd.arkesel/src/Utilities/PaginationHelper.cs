@@ -1,6 +1,8 @@
-using bobcode.ussd.arkesel.models;
 
-namespace bobcode.ussd.arkesel.Utilities;
+
+using Bobcode.Ussd.Arkesel.Models;
+
+namespace Bobcode.Ussd.Arkesel.Utilities;
 
 /// <summary>
 /// Helper class for paginating menu options

@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.Extensions;
+namespace Bobcode.Ussd.Arkesel.Extensions;
 
 /// <summary>
 /// Extension methods for enum-based menu pages

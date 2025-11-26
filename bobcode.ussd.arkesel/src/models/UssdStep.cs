@@ -1,7 +1,6 @@
-using System.Threading.Tasks;
-using bobcode.ussd.arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Actions;
 
-namespace bobcode.ussd.arkesel.models;
+namespace Bobcode.Ussd.Arkesel.Models;
 
 public abstract class UssdStep
 {

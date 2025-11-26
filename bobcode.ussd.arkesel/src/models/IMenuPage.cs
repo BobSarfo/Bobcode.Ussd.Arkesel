@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.models;
+namespace Bobcode.Ussd.Arkesel.Models;
 
 /// <summary>
 /// Interface for menu page identifiers.

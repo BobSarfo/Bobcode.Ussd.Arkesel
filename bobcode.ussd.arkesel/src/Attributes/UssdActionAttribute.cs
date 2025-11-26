@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.Attributes;
+namespace Bobcode.Ussd.Arkesel.Attributes;
 
 /// <summary>
 /// Marks a class as a USSD action handler and optionally specifies its action key.

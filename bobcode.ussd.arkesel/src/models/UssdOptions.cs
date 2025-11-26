@@ -1,4 +1,4 @@
-namespace bobcode.ussd.arkesel.models;
+namespace Bobcode.Ussd.Arkesel.Models;
 
 /// <summary>
 /// Configuration options for USSD application behavior

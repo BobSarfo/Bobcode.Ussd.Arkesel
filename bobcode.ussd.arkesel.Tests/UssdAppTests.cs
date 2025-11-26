@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.Core;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Core;
+using Bobcode.Ussd.Arkesel.Models;
 
 namespace bobcode.ussd.arkesel.Tests;
 

@@ -1,7 +1,7 @@
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Models;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace bobcode.ussd.arkesel.Actions;
+namespace Bobcode.Ussd.Arkesel.Actions;
 
 
 

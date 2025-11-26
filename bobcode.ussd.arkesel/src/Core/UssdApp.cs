@@ -1,10 +1,10 @@
 using System.Text;
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace bobcode.ussd.arkesel.Core
+namespace Bobcode.Ussd.Arkesel.Core
 {
     /// <summary>
     /// Main USSD application handler that processes incoming USSD requests

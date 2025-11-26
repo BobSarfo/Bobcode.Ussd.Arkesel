@@ -1,7 +1,7 @@
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace bobcode.ussd.arkesel.Tests;
+namespace Bobcode.Ussd.Arkesel.Tests;
 
 // Test action handler implementation
 public class TestActionHandler : BaseActionHandler

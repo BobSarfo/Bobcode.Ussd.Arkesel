@@ -1,6 +1,6 @@
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace bobcode.ussd.arkesel.Actions;
+namespace Bobcode.Ussd.Arkesel.Actions;
 
 /// <summary>
 /// Fluent builder for creating USSD menu structures

@@ -1,11 +1,10 @@
 using System.Reflection;
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.Attributes;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using bobcode.ussd.arkesel.Core;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace bobcode.ussd.arkesel.Core;
+namespace Bobcode.Ussd.Arkesel.Core;
 
 /// <summary>
 /// Extension methods for configuring USSD SDK services
