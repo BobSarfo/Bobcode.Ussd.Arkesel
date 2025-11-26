@@ -33,6 +33,29 @@ public static class UssdSdkExtensions
     }
 
     /// <summary>
+    /// Adds USSD SDK services to the service collection with inline configuration
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <param name="menu">The menu structure for the USSD application</param>
+    /// <param name="configureOptions">Action to configure USSD options</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddUssdSdk(
+        this IServiceCollection services,
+        Menu menu,
+        Action<UssdOptions> configureOptions)
+    {
+        var options = new UssdOptions();
+        configureOptions?.Invoke(options);
+
+        services.AddSingleton(menu);
+        services.AddSingleton(options);
+        services.AddSingleton<IUssdSessionStore, MemorySessionStore>();
+        services.AddScoped<UssdApp>();
+        services.AddMemoryCache();
+        return services;
+    }
+
+    /// <summary>
     /// Adds USSD SDK services with a custom session store
     /// </summary>
     /// <typeparam name="TSessionStore">The session store implementation type</typeparam>
@@ -48,6 +71,31 @@ public static class UssdSdkExtensions
     {
         services.AddSingleton(menu);
         services.AddSingleton(options ?? new UssdOptions());
+        services.AddSingleton<IUssdSessionStore, TSessionStore>();
+        services.AddScoped<UssdApp>();
+        services.AddMemoryCache();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds USSD SDK services with a custom session store and inline configuration
+    /// </summary>
+    /// <typeparam name="TSessionStore">The session store implementation type</typeparam>
+    /// <param name="services">The service collection</param>
+    /// <param name="menu">The menu structure for the USSD application</param>
+    /// <param name="configureOptions">Action to configure USSD options</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddUssdSdk<TSessionStore>(
+        this IServiceCollection services,
+        Menu menu,
+        Action<UssdOptions> configureOptions)
+        where TSessionStore : class, IUssdSessionStore
+    {
+        var options = new UssdOptions();
+        configureOptions?.Invoke(options);
+
+        services.AddSingleton(menu);
+        services.AddSingleton(options);
         services.AddSingleton<IUssdSessionStore, TSessionStore>();
         services.AddScoped<UssdApp>();
         services.AddMemoryCache();

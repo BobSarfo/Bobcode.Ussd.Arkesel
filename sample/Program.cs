@@ -72,25 +72,21 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
     .Build();
 
 // Configure USSD SDK with custom options
-var ussdOptions = new UssdOptions
+builder.Services.AddUssdSdk(menu, options =>
 {
-    SessionTimeout = TimeSpan.FromMinutes(5),
-    BackCommand = "0",
-    HomeCommand = "#",
-    EnablePagination = true,
-    ItemsPerPage = 5,
-    InvalidInputMessage = "Invalid input. Please try again.",
-    DefaultEndMessage = "Thank you for using our service.",
-    EnableAutoBackNavigation = true,
-    EnableSessionResumption = true,
-    ResumeSessionPrompt = "You have an active session.",
-    ResumeOptionLabel = "Resume",
-    StartFreshOptionLabel = "Start Again",
-};
-
-builder.Services.AddUssdSdk(menu, ussdOptions);
-
-// Auto-discover and register all action handlers from this assembly
+    options.SessionTimeout = TimeSpan.FromMinutes(5);
+    options.BackCommand = "0";
+    options.HomeCommand = "#";
+    options.EnablePagination = true;
+    options.ItemsPerPage = 5;
+    options.InvalidInputMessage = "Invalid input. Please try again.";
+    options.DefaultEndMessage = "Thank you for using our service.";
+    options.EnableAutoBackNavigation = true;
+    options.EnableSessionResumption = true;
+    options.ResumeSessionPrompt = "You have an active session.";
+    options.ResumeOptionLabel = "Resume";
+    options.StartFreshOptionLabel = "Start Again";
+});
 builder.Services.AddUssdActionsFromAssembly(typeof(Program).Assembly);
 
 var app = builder.Build();
