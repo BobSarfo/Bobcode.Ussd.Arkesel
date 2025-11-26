@@ -1,8 +1,8 @@
-using bobcode.ussd.arkesel.Actions;
-using bobcode.ussd.arkesel.Attributes;
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Attributes;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace Sample.Handlers;
+namespace Bobcode.Ussd.Arkesel.Sample.Handlers;
 
 /// <summary>
 /// Example action handler for checking account balance

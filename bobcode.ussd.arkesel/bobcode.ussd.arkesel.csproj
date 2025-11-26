@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageId>bobcode.ussd.arkesel</PackageId>
+        <PackageId>Bobcode.Ussd.Arkesel</PackageId>
         <Version>1.0.0</Version>
         <Authors>Robert Sagoe Sarfo</Authors>
         <Company>OpenUSSD</Company>
@@ -15,6 +15,7 @@
         <PackageTags>SDK;USSD;Telecom</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RootNamespace>bobcode.ussd.arkesel</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

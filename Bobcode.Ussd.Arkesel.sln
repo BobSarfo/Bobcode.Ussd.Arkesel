@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bobcode.ussd.arkesel", "bobcode.ussd.arkesel\bobcode.ussd.arkesel.csproj", "{E4BBCD80-5A44-462C-ABB6-0348AFD457B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bobcode.Ussd.Arkesel", "Bobcode.Ussd.Arkesel\Bobcode.Ussd.Arkesel.csproj", "{E4BBCD80-5A44-462C-ABB6-0348AFD457B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bobcode.ussd.arkesel.Tests", "bobcode.ussd.arkesel.Tests\bobcode.ussd.arkesel.Tests.csproj", "{5303B13F-6E53-4D53-A998-A42E7C9ABD99}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bobcode.Ussd.Arkesel.Tests", "Bobcode.Ussd.Arkesel.Tests\Bobcode.Ussd.Arkesel.Tests.csproj", "{5303B13F-6E53-4D53-A998-A42E7C9ABD99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "sample\Sample.csproj", "{6354B79D-CAB2-4A08-A1D0-8516881452EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bobcode.Ussd.Arkesel.Sample", "sample\Bobcode.Ussd.Arkesel.Sample.csproj", "{6354B79D-CAB2-4A08-A1D0-8516881452EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,6 @@
-using bobcode.ussd.arkesel.models;
+using Bobcode.Ussd.Arkesel.Models;
 
-namespace Sample;
+namespace Bobcode.Ussd.Arkesel.Sample;
 
 /// <summary>
 /// Strongly-typed session keys for the demo bank application

@@ -1,4 +1,4 @@
-namespace Sample;
+namespace Bobcode.Ussd.Arkesel.Sample;
 
 /// <summary>
 /// Strongly-typed menu nodes for the demo bank application

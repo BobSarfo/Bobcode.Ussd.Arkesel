@@ -1,8 +1,8 @@
-using bobcode.ussd.arkesel.Core;
-using bobcode.ussd.arkesel.Builders;
-using bobcode.ussd.arkesel.models;
-using Sample;
-using Sample.Handlers;
+using Bobcode.Ussd.Arkesel.Builders;
+using Bobcode.Ussd.Arkesel.Core;
+using Bobcode.Ussd.Arkesel.Models;
+using Bobcode.Ussd.Arkesel.Sample;
+using Bobcode.Ussd.Arkesel.Sample.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 

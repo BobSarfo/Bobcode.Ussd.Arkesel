@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\bobcode.ussd.arkesel\bobcode.ussd.arkesel.csproj" />
+    <ProjectReference Include="..\Bobcode.Ussd.Arkesel\Bobcode.Ussd.Arkesel.csproj" />
   </ItemGroup>
 
 </Project>
