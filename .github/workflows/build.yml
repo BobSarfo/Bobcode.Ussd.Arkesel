@@ -55,7 +55,7 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: dotnet restore OpenUSSD.sln
+        run: dotnet restore Bobcode.Ussd.Arkesel.sln
 
       - name: Build
         run: dotnet build ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj --no-restore --configuration Release
