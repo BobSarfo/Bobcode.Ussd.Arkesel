@@ -152,27 +152,24 @@ public class BalanceCheckHandler : BaseActionHandler
 Complex multi-step flow demonstrating session state management.
 
 ```csharp
-public class TransferHandler : BaseActionHandler
+UssdAction]
+public class TransferRecipientHandler : BaseActionHandler
 {
-    public override string Key => "transfer";
-
-    public override async Task<UssdStepResult> HandleAsync(UssdContext context)
+    public override Task<UssdStepResult> HandleAsync(UssdContext context)
     {
-        var step = GetSessionData<string>(context, "transfer_step") ?? "recipient";
-        
-        switch (step)
+        var input = context.Request.UserData;
+
+        if (string.IsNullOrWhiteSpace(input) || input.Length < 10)
         {
-            case "recipient":
-                SetSessionData(context, "recipient", context.Request.UserData);
-                SetSessionData(context, "transfer_step", "amount");
-                return Continue("Enter amount:", "transfer_amount");
-            
-            case "amount":
-                // Validate and process amount
-                // ...
+            return Task.FromResult(Continue("Invalid phone number. Please enter a valid phone number:"));
         }
+
+        Set(context, SessionKeys.Recipient, input);
+
+        return Task.FromResult(GoTo(BankMenuNode.TransferAmount));
     }
 }
+
 ```
 
 ## Configuration
@@ -191,19 +188,6 @@ builder.Services.AddUssdSdk(menu, options =>
 });
 ```
 
-## Building Menus
-
-Use the fluent `MenuBuilder` API:
-
-```csharp
-var menu = new MenuBuilder()
-    .SetRoot("main")
-    .AddNode("main", "Welcome!\n1. Option 1\n2. Option 2")
-    .AddOption("main", "1", targetStep: "option1")
-    .AddOption("main", "2", actionKey: "handle_option2")
-    .AddNode("option1", "You selected option 1")
-    .Build();
-```
 
 ## Registering Action Handlers
 
