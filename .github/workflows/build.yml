@@ -3,6 +3,8 @@ name: Build, Test, and Release Bobcode.Ussd.Arkesel SDK
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
 
@@ -60,13 +62,33 @@ jobs:
       - name: Build
         run: dotnet build ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj --no-restore --configuration Release
 
+
+      - name: Pack NuGet package
+        run: dotnet pack ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj \
+          --no-build \
+          --configuration Release \
+          --output ./artifacts \
+          -p:PackageVersion=${{ env.VERSION }}
+
       - name: Pack NuGet package
         run: dotnet pack ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj --no-build --configuration Release --output ./artifacts
+      
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
         id: login
         with:
           user: ${{ secrets.NUGET_USER }} 
 
+
+      - name: Ensure tag is on main branch
+        run: |
+          git fetch origin main
+          if git branch -r --contains $GITHUB_SHA | grep -q "origin/main"; then
+            echo "All okay... Proceeding to publishing..."
+          else
+            echo "Publishing existed; Tag is NOT on main branch"
+            exit 1
+          fi
+          
       - name: Publish package to NuGet
         run: dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }}  --source https://api.nuget.org/v3/index.json  --skip-duplicate
