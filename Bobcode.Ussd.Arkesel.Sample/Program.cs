@@ -24,39 +24,39 @@ var products = new[]
 };
 
 // Build the USSD menu using strongly-typed MenuBuilder
-var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
-    .Root(BankMenuNode.Main)
+var menu = new UssdMenuBuilder<BankMenuPage>("demo_bank_menu")
+    .Root(BankMenuPage.Main)
 
     // Main menu
-    .Page(BankMenuNode.Main, n => n
+    .Page(BankMenuPage.Main, n => n
         .Title("Welcome to Demo Bank")
         .Option("1", "Check Balance").Action<BalanceCheckHandler>()
-        .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
-        .Option("3", "Vote").GoTo(BankMenuNode.VoteMenu)
-        .Option("4", "View Products").GoTo(BankMenuNode.Products)
+        .Option("2", "Transfer Money").GoTo(BankMenuPage.TransferRecipient)
+        .Option("3", "Vote").GoTo(BankMenuPage.VoteMenu)
+        .Option("4", "View Products").GoTo(BankMenuPage.Products)
     )
 
     // Transfer flow - Step 1: Collect recipient
-    .Page(BankMenuNode.TransferRecipient, n => n
+    .Page(BankMenuPage.TransferRecipient, n => n
         .Title("Enter recipient phone number:")
         .Input().Action<TransferRecipientHandler>()
     )
 
     // Transfer flow - Step 2: Collect amount
-    .Page(BankMenuNode.TransferAmount, n => n
+    .Page(BankMenuPage.TransferAmount, n => n
         .Title("Enter amount to transfer:")
         .Input().Action<TransferAmountHandler>()
     )
 
     // Transfer flow - Step 3: Confirm transfer
-    .Page(BankMenuNode.TransferConfirm, n => n
+    .Page(BankMenuPage.TransferConfirm, n => n
         .Title("Confirm transfer:")
         .Option("1", "Confirm").Action<TransferConfirmHandler>()
-        .Option("2", "Cancel").GoTo(BankMenuNode.Main)
+        .Option("2", "Cancel").GoTo(BankMenuPage.Main)
     )
 
     // Voting menu
-    .Page(BankMenuNode.VoteMenu, n => n
+    .Page(BankMenuPage.VoteMenu, n => n
         .Title("Vote for your candidate:")
         .Option("1", "Candidate A").Action<VotingActionHandler>()
         .Option("2", "Candidate B").Action<VotingActionHandler>()
@@ -64,7 +64,7 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
     )
 
     // Products menu with built-in pagination
-    .Page(BankMenuNode.Products, n => n
+    .Page(BankMenuPage.Products, n => n
         .Title("Our Products:")
         .OptionList(products, p => $"{p.Name} - GHS {p.Price}", autoPaginate: true, itemsPerPage: 3)
     )

@@ -26,7 +26,7 @@ public class TransferRecipientHandler : BaseActionHandler
         Set(context, SessionKeys.Recipient, input);
 
         // Navigate to amount collection node
-        return Task.FromResult(GoTo(BankMenuNode.TransferAmount));
+        return Task.FromResult(GoTo(BankMenuPage.TransferAmount));
     }
 }
 
@@ -53,7 +53,7 @@ public class TransferAmountHandler : BaseActionHandler
         var confirmMessage = $"Confirm transfer:\nTo: {recipient}\nAmount: GHS {amount:F2}\n\n1. Confirm\n2. Cancel";
 
         // Navigate to confirmation page with custom message
-        return Task.FromResult(Continue(confirmMessage, BankMenuNode.TransferConfirm.ToPageId()));
+        return Task.FromResult(Continue(confirmMessage, BankMenuPage.TransferConfirm.ToPageId()));
     }
 }
 

@@ -19,6 +19,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="coverlet.collector" Version="8.0.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
       <None Include="README.md" Pack="true" PackagePath="" />

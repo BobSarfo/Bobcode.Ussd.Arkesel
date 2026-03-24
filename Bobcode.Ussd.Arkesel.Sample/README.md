@@ -166,7 +166,7 @@ public class TransferRecipientHandler : BaseActionHandler
 
         Set(context, SessionKeys.Recipient, input);
 
-        return Task.FromResult(GoTo(BankMenuNode.TransferAmount));
+        return Task.FromResult(GoTo(BankMenu.TransferAmount));
     }
 }
 

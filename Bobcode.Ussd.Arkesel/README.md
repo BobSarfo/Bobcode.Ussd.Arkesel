@@ -32,7 +32,7 @@ dotnet add package OpenUSSD
 #### 1. Define Menu Nodes
 
 ```csharp
-public enum BankMenuNode
+public enum BankMenu
 {
     Main,
     CheckBalance,
@@ -46,16 +46,16 @@ public enum BankMenuNode
 #### 2. Build Menu Structure
 
 ```csharp
-var menu = new UssdMenuBuilder<BankMenuNode>("bank")
-    .Root(BankMenuNode.Main)
+var menu = new UssdMenuBuilder<BankMenu>("bank")
+    .Root(BankMenu.Main)
 
-    .Page(BankMenuNode.Main, n => n
+    .Page(BankMenu.Main, n => n
         .Title("Welcome to Demo Bank")
         .Option("1", "Check Balance").Action<BalanceCheckHandler>()
-        .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
+        .Option("2", "Transfer Money").GoTo(BankMenu.TransferRecipient)
     )
 
-    .Title(BankMenuNode.TransferRecipient, n => n
+    .Title(BankMenu.TransferRecipient, n => n
         .Message("Enter recipient phone number:")
         .Input().Action<TransferRecipientHandler>()
     )
@@ -168,7 +168,7 @@ var recipient = Get(context, SessionKeys.Recipient);
 Automatically paginate long lists:
 
 ```csharp
-.Page(BankMenuNode.Products, n => n
+.Page(BankMenu.Products, n => n
     .Title("Our Products:")
     .OptionList(products,
         p => $"{p.Name} - GHS {p.Price}",
