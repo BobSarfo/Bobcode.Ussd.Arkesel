@@ -14,30 +14,35 @@ This sample application demonstrates how to use the OpenUSSD SDK to build a USSD
 ## Project Structure
 
 ```
-sample/
+Bobcode.Ussd.Arkesel.Sample/
 ├── Handlers/
-│   ├── VotingActionHandler.cs      # Simple action handler example
-│   ├── BalanceCheckHandler.cs      # Balance check example
-│   └── TransferHandler.cs          # Multi-step flow example
-├── Program.cs                       # Application setup and configuration
-├── UssdController.cs                # USSD endpoint controller
-└── README.md                        # This file
+│   ├── VotingActionHandler.cs
+│   ├── BalanceCheckHandler.cs
+│   └── TransferHandler.cs          # TransferRecipient, TransferAmount, TransferConfirm
+├── MenuNodes.cs
+├── SessionKeys.cs
+├── Program.cs                      # Menu, DI, Swagger, POST /ussd (minimal API)
+└── README.md
 ```
+
+**Session storage:** `Program.cs` uses **`AddUssdSdk(menu, …)`**, so the default is **`MemorySessionStore`** (in-memory). Redis is optional for production; see the repository **`docs/sdk.md`**.
 
 ## Getting Started
 
 ### 1. Run the Application
 
+From the repository root:
+
 ```bash
-cd sample
+cd Bobcode.Ussd.Arkesel.Sample
 dotnet run
 ```
 
-The application will start on `https://localhost:5001` (or the port specified in launchSettings.json).
+URLs and ports come from **`Properties/launchSettings.json`** (for example **http://localhost:5108** and **https://localhost:7123** for the `https` profile).
 
 ### 2. Test with Swagger
 
-Navigate to `https://localhost:5001/swagger` to access the Swagger UI and test the USSD endpoint.
+Open **`/swagger`** on the same base URL (for example `https://localhost:7123/swagger` or `http://localhost:5108/swagger`) and try **POST `/ussd`**.
 
 ### 3. Sample Request
 
@@ -152,7 +157,7 @@ public class BalanceCheckHandler : BaseActionHandler
 Complex multi-step flow demonstrating session state management.
 
 ```csharp
-UssdAction]
+[UssdAction]
 public class TransferRecipientHandler : BaseActionHandler
 {
     public override Task<UssdStepResult> HandleAsync(UssdContext context)
@@ -166,7 +171,7 @@ public class TransferRecipientHandler : BaseActionHandler
 
         Set(context, SessionKeys.Recipient, input);
 
-        return Task.FromResult(GoTo(BankMenu.TransferAmount));
+        return Task.FromResult(GoTo(BankMenuPage.TransferAmount));
     }
 }
 

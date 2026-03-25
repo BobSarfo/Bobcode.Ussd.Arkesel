@@ -50,12 +50,7 @@ public enum BankMenu
 
 ## 3. Build the menu
 
-Use 
-1. **`.Page(...)`** for each screen, 
-2. **`.Title(...)`** for the user-facing text, 
-and **`.Option(...)`** for numbered choices.
-4.  **`.Action<MyHandler>()`** runs your handler when the user picks that option. For text input (e.g. phone number), 
-5. **`.Input().Action<...>()`** on another page—see the sample project.
+For each screen, use **`.Page(...)`**, set the text with **`.Title(...)`**, and add **`.Option(...)`** for numbered choices. **`.Action<MyHandler>()`** wires a handler to an option. For free-text steps (for example a phone number), use **`.Input().Action<...>()`** on another page—the sample project shows a full flow.
 
 ```csharp
 using Bobcode.Ussd.Arkesel.Builders;

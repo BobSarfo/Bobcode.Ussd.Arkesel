@@ -30,6 +30,12 @@ OpenUSSD is a .NET 8.0 SDK that provides a framework for building USSD (Unstruct
 - **Fluent APIs**: Builder pattern for intuitive menu construction
 - **Convention over Configuration**: Attribute-based auto-discovery with sensible defaults
 
+### Session persistence default
+
+`AddUssdSdk(Menu, …)` registers **`IUssdSessionStore`** as **`MemorySessionStore`** (backed by **`IMemoryCache`**). Sessions live **in the app process** and are **not** shared across instances.
+
+**Redis is not the default.** For multiple servers or restarts that must keep sessions, register **`IConnectionMultiplexer`** (StackExchange.Redis) and use **`AddUssdSdk<RedisSessionStore>(Menu, …)`**.
+
 ---
 
 # **2. Architecture**
@@ -266,8 +272,8 @@ Task RemoveAsync(string sessionId, CancellationToken ct = default);
 ```
 
 **Implementations**:
-- `MemorySessionStore`: In-memory storage using IMemoryCache (default)
-- `RedisSessionStore`: Redis-based distributed storage
+- `MemorySessionStore`: In-memory storage using `IMemoryCache` (**default** for `AddUssdSdk` without a session-store type parameter)
+- `RedisSessionStore`: Redis-based distributed storage (**opt-in** via `AddUssdSdk<RedisSessionStore>`)
 
 ---
 
@@ -356,6 +362,8 @@ public NodeBuilder<TNode> OptionList<T>(IEnumerable<T> items, ...)
 **Location**: `Core/UssdSdkExtensions.cs`
 
 Extension methods for registering SDK services with the DI container.
+
+**Session store:** non-generic **`AddUssdSdk`** overloads register **`MemorySessionStore`**. Generic **`AddUssdSdk<TSessionStore>`** registers your **`TSessionStore`** (for example **`RedisSessionStore`**) as **`IUssdSessionStore`**.
 
 **Registration Methods**:
 ```csharp
@@ -1169,4 +1177,4 @@ The OpenUSSD SDK is architected with the following key characteristics:
 
 For usage examples and implementation patterns, see:
 - [Sample Project Documentation](sample.md)
-- [Sample Project README](../sample/README.md)
+- [Sample Project README](../Bobcode.Ussd.Arkesel.Sample/README.md)

@@ -13,20 +13,21 @@ A reference implementation demonstrating:
 - Back and home navigation
 - Voting functionality
 
+**Session store:** the sample calls **`AddUssdSdk(menu, …)`**, which uses the default **`MemorySessionStore`** (in-memory). **Redis is not used** unless you switch to **`AddUssdSdk<RedisSessionStore>(…)`**; see [sdk.md](sdk.md).
+
 ---
 
 # **1. Project Structure**
 
 ```
-sample/
+Bobcode.Ussd.Arkesel.Sample/
 ├── Handlers/
 │   ├── BalanceCheckHandler.cs
-│   ├── TransferHandler.cs (contains 3 handlers)
+│   ├── TransferHandler.cs   (TransferRecipient, TransferAmount, TransferConfirm)
 │   └── VotingActionHandler.cs
-├── MenuNodes.cs
+├── MenuNodes.cs             (BankMenuPage enum)
 ├── SessionKeys.cs
-├── Program.cs
-├── UssdController.cs
+├── Program.cs               (menu, DI, minimal API POST /ussd)
 └── Sample.http
 ```
 
@@ -34,38 +35,46 @@ sample/
 
 # **2. Menu Implementation**
 
-The sample uses a single menu built directly in `Program.cs` using the strongly-typed `UssdMenuBuilder<TNode>`:
+The sample builds one menu in `Program.cs` with **`UssdMenuBuilder<BankMenuPage>`**. Each screen is a **`.Page`**; user-facing text uses **`.Title`** (not `.Message`).
 
 ```csharp
-var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
-    .Root(BankMenuNode.Main)
+var menu = new UssdMenuBuilder<BankMenuPage>("demo_bank_menu")
+    .Root(BankMenuPage.Main)
 
-    // Main menu
-    .Node(BankMenuNode.Main, n => n
-        .Message("Welcome to Demo Bank")
+    .Page(BankMenuPage.Main, n => n
+        .Title("Welcome to Demo Bank")
         .Option("1", "Check Balance").Action<BalanceCheckHandler>()
-        .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
-        .Option("3", "Vote").GoTo(BankMenuNode.VoteMenu)
-        .Option("4", "View Products").GoTo(BankMenuNode.Products)
+        .Option("2", "Transfer Money").GoTo(BankMenuPage.TransferRecipient)
+        .Option("3", "Vote").GoTo(BankMenuPage.VoteMenu)
+        .Option("4", "View Products").GoTo(BankMenuPage.Products)
     )
 
-    // Transfer flow - Step 1: Collect recipient
-    .Node(BankMenuNode.TransferRecipient, n => n
-        .Message("Enter recipient phone number:")
+    .Page(BankMenuPage.TransferRecipient, n => n
+        .Title("Enter recipient phone number:")
         .Input().Action<TransferRecipientHandler>()
     )
 
-    // Transfer flow - Step 2: Collect amount
-    .Node(BankMenuNode.TransferAmount, n => n
-        .Message("Enter amount to transfer:")
+    .Page(BankMenuPage.TransferAmount, n => n
+        .Title("Enter amount to transfer:")
         .Input().Action<TransferAmountHandler>()
     )
 
-    // Transfer flow - Step 3: Confirm transfer
-    .Node(BankMenuNode.TransferConfirm, n => n
-        .Message("Confirm transfer:")
+    .Page(BankMenuPage.TransferConfirm, n => n
+        .Title("Confirm transfer:")
         .Option("1", "Confirm").Action<TransferConfirmHandler>()
-        .Option("2", "Cancel").GoTo(BankMenuNode.Main)
+        .Option("2", "Cancel").GoTo(BankMenuPage.Main)
+    )
+
+    .Page(BankMenuPage.VoteMenu, n => n
+        .Title("Vote for your candidate:")
+        .Option("1", "Candidate A").Action<VotingActionHandler>()
+        .Option("2", "Candidate B").Action<VotingActionHandler>()
+        .Option("3", "Candidate C").Action<VotingActionHandler>()
+    )
+
+    .Page(BankMenuPage.Products, n => n
+        .Title("Our Products:")
+        .OptionList(products, p => $"{p.Name} - GHS {p.Price}", autoPaginate: true, itemsPerPage: 3)
     )
 
     .Build();
@@ -73,12 +82,12 @@ var menu = new UssdMenuBuilder<BankMenuNode>("demo_bank_menu")
 
 ---
 
-# **3. Menu Nodes Enum**
+# **3. Menu Pages Enum**
 
 The menu uses an enum for type-safe navigation:
 
 ```csharp
-public enum BankMenuNode
+public enum BankMenuPage
 {
     Main,
     TransferRecipient,
@@ -128,7 +137,7 @@ public class TransferRecipientHandler : BaseActionHandler
         }
 
         Set(context, SessionKeys.Recipient, input);
-        return Task.FromResult(GoTo(BankMenuNode.TransferAmount));
+        return Task.FromResult(GoTo(BankMenuPage.TransferAmount));
     }
 }
 ```
@@ -153,7 +162,7 @@ public class TransferAmountHandler : BaseActionHandler
         var recipient = Get(context, SessionKeys.Recipient);
         var message = $"Confirm transfer:\nTo: {recipient}\nAmount: GHS {amount:F2}";
 
-        return Task.FromResult(Continue(message, BankMenuNode.TransferConfirm.ToNodeId()));
+        return Task.FromResult(Continue(message, BankMenuPage.TransferConfirm.ToPageId()));
     }
 }
 ```
@@ -248,8 +257,8 @@ var products = new[]
     new { Name = "Product G", Price = 70m },
 };
 
-.Node(BankMenuNode.Products, n => n
-    .Message("Our Products:")
+.Page(BankMenuPage.Products, n => n
+    .Title("Our Products:")
     .OptionList(products,
         p => $"{p.Name} - GHS {p.Price}",
         autoPaginate: true,
@@ -308,16 +317,18 @@ builder.Services.AddUssdSdk(menu, options =>
 builder.Services.AddUssdActionsFromAssembly(typeof(Program).Assembly);
 ```
 
+This registration uses the **default in-memory** session store (`MemorySessionStore`). It is fine for local runs; use **Redis** only when you need shared sessions across instances (see [sdk.md](sdk.md)).
+
 ---
 
 # **9. Running the Sample**
 
 ```bash
-cd sample
+cd Bobcode.Ussd.Arkesel.Sample
 dotnet run
 ```
 
-The application will start on `http://localhost:5000` (or `https://localhost:5001`).
+The dev server URL is defined in `Properties/launchSettings.json` (for example **http://localhost:5108**). Swagger is opened automatically for the `http` / `https` profiles.
 
 ---
 
@@ -325,37 +336,38 @@ The application will start on `http://localhost:5000` (or `https://localhost:500
 
 ### Using HTTP Client
 
-Send a POST request to `http://localhost:5000/ussd`:
+Send **POST** `{baseUrl}/ussd` (replace `baseUrl` with your run URL, e.g. `http://localhost:5108`):
 
 ```json
 {
   "sessionID": "unique-session-id",
   "userID": "user123",
   "msisdn": "0244000000",
+  "userData": "",
   "newSession": true,
-  "userInput": ""
+  "network": "MTN"
 }
 ```
 
 ### Using the Included Sample.http File
 
-The sample includes a `Sample.http` file with pre-configured requests. Open it in Visual Studio Code with the REST Client extension.
+The sample includes `Sample.http`. Open it in Visual Studio Code with the REST Client extension (adjust the host if your port differs).
 
 ### Example Flow
 
-1. **Initial Request** (newSession: true, userInput: "")
+1. **Initial request** (`newSession`: true, `userData`: "")
    - Response: "Welcome to Demo Bank\n1. Check Balance\n2. Transfer Money\n3. Vote\n4. View Products"
 
-2. **Select Transfer** (newSession: false, userInput: "2")
+2. **Select transfer** (`newSession`: false, `userData`: "2")
    - Response: "Enter recipient phone number:"
 
-3. **Enter Phone** (newSession: false, userInput: "0244123456")
+3. **Enter phone** (`newSession`: false, `userData`: "0244123456")
    - Response: "Enter amount to transfer:"
 
-4. **Enter Amount** (newSession: false, userInput: "100")
+4. **Enter amount** (`newSession`: false, `userData`: "100")
    - Response: "Confirm transfer:\nTo: 0244123456\nAmount: GHS 100.00\n\n1. Confirm\n2. Cancel"
 
-5. **Confirm** (newSession: false, userInput: "1")
+5. **Confirm** (`newSession`: false, `userData`: "1")
    - Response: "Transfer of GHS 100.00 to 0244123456 successful!\nThank you."
 
 ---
@@ -381,7 +393,7 @@ The sample application demonstrates:
 
 To add new functionality:
 
-1. **Add new menu nodes** to the `BankMenuNode` enum
+1. **Add new menu pages** to the `BankMenuPage` enum
 2. **Create new handlers** in the `Handlers/` folder with `[UssdAction]` attribute
 3. **Add new nodes** to the menu builder in `Program.cs`
 4. **Define session keys** in `SessionKeys.cs` if needed
@@ -391,10 +403,10 @@ Example:
 
 ```csharp
 // 1. Add to enum
-public enum BankMenuNode
+public enum BankMenuPage
 {
     Main,
-    // ... existing nodes
+    // ... existing pages
     BuyAirtime
 }
 
@@ -409,8 +421,8 @@ public class BuyAirtimeHandler : BaseActionHandler
 }
 
 // 3. Add to menu
-.Node(BankMenuNode.Main, n => n
-    .Message("Welcome to Demo Bank")
+.Page(BankMenuPage.Main, n => n
+    .Title("Welcome to Demo Bank")
     // ... existing options
     .Option("5", "Buy Airtime").Action<BuyAirtimeHandler>()
 )
