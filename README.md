@@ -1,109 +1,104 @@
 # OpenUSSD
 
-### Nugget Package : https://www.nuget.org/packages/OpenUSSD/
-A modern, strongly-typed .NET SDK for building USSD (Unstructured Supplementary Service Data) applications with ASP.NET Core.
+**NuGet:** [OpenUSSD](https://www.nuget.org/packages/OpenUSSD/)
 
-## Overview
+A .NET 8 SDK for building **USSD** (phone interactive menus) on **ASP.NET Core**: typed menus, sessions, pagination, and action handlers—without scattering magic strings through your code.
 
-OpenUSSD simplifies USSD application development by providing a clean, type-safe API with built-in session management, pagination, and navigation support. Build complex USSD flows without magic strings or boilerplate code.
+---
 
-## Key Features
+## Start here if you are new
 
-- **Strongly-Typed Navigation** - Use enums instead of magic strings for menu navigation
-- **Fluent Menu Builder** - Intuitive API for building hierarchical menu structures
-- **Action Handlers** - Modular, testable business logic handlers
-- **Session Management** - Built-in session storage with type-safe session keys
-- **Pagination Support** - Automatic pagination for long lists
-- **Multi-Step Flows** - Easy implementation of complex multi-step processes
-- **Session Resumption** - Allow users to resume interrupted sessions
-- **Navigation Commands** - Built-in back and home navigation
-- **Dependency Injection** - Full DI support throughout the SDK
-- **Extensible Architecture** - Replace session stores, customize behavior
+| Step | What to do |
+|------|------------|
+| 1 | [Install](#1-install-the-package) the NuGet package in an ASP.NET Core web project. |
+| 2 | [Define](#2-define-a-menu-enum) an `enum` for your screens (each value is a menu “page”). |
+| 3 | [Build](#3-build-the-menu) the menu with `UssdMenuBuilder` (titles, options, `.Action<THandler>()`). |
+| 4 | [Register](#4-wire-up-dependency-injection) the SDK and your handlers in `Program.cs`. |
+| 5 | [Expose](#5-add-an-http-endpoint) a POST endpoint that forwards `UssdRequestDto` to `UssdApp`. |
 
-## Quick Start
+After that, run the app and POST JSON to your `/ussd` route (see [Try the sample](#try-the-sample)). For full API detail, use **[docs/sdk.md](docs/sdk.md)**.
 
-### Installation
+---
+
+## Prerequisites
+
+- **.NET 8** or later  
+- An **ASP.NET Core** app (minimal APIs or controllers)
+
+---
+
+## 1. Install the package
 
 ```bash
 dotnet add package OpenUSSD
 ```
 
-### Basic Usage
+---
 
-#### 1. Define Menu Nodes
+## 2. Define a menu enum
+
+Each enum member represents a step or screen in your flow (you can add more pages for transfers, PIN entry, etc.):
 
 ```csharp
-public enum BankMenuNode
+public enum BankMenu
 {
     Main,
-    CheckBalance,
-    Transfer,
-    TransferRecipient,
-    TransferAmount,
-    TransferConfirm
 }
 ```
 
-#### 2. Build Menu Structure
+---
+
+## 3. Build the menu
+
+Use 
+1. **`.Page(...)`** for each screen, 
+2. **`.Title(...)`** for the user-facing text, 
+and **`.Option(...)`** for numbered choices.
+4.  **`.Action<MyHandler>()`** runs your handler when the user picks that option. For text input (e.g. phone number), 
+5. **`.Input().Action<...>()`** on another page—see the sample project.
 
 ```csharp
-var menu = new UssdMenuBuilder<BankMenuNode>("bank")
-    .Root(BankMenuNode.Main)
+using Bobcode.Ussd.Arkesel.Builders;
 
-    .Node(BankMenuNode.Main, n => n
-        .Message("Welcome to Demo Bank")
-        .Option("1", "Check Balance").Action<BalanceCheckHandler>()
-        .Option("2", "Transfer Money").GoTo(BankMenuNode.TransferRecipient)
-    )
-
-    .Node(BankMenuNode.TransferRecipient, n => n
-        .Message("Enter recipient phone number:")
-        .Input().Action<TransferRecipientHandler>()
-    )
-
+var menu = new UssdMenuBuilder<BankMenu>("demo_bank")
+    .Root(BankMenu.Main)
+    .Page(BankMenu.Main, n => n
+        .Title("Welcome to Demo Bank")
+        .Option("1", "Check balance").Action<BalanceCheckHandler>())
     .Build();
 ```
 
-#### 3. Configure Services
+---
+
+## 4. Wire up dependency injection
+
+In `Program.cs`, register the menu, optional `UssdOptions`, and discover handlers marked with `[UssdAction]`:
 
 ```csharp
-var builder = WebApplication.CreateBuilder(args);
+using Bobcode.Ussd.Arkesel.Core;
 
 builder.Services.AddUssdSdk(menu, options =>
 {
     options.SessionTimeout = TimeSpan.FromMinutes(5);
-    options.BackCommand = "0";
-    options.HomeCommand = "#";
-    options.EnablePagination = true;
-    options.ItemsPerPage = 5;
-    options.EnableSessionResumption = true;
+    options.BackCommand = "0";   // go back
+    options.HomeCommand = "#";   // main menu
 });
 
 builder.Services.AddUssdActionsFromAssembly(typeof(Program).Assembly);
 ```
 
-#### 4. Create Action Handlers
+**Defaults:** sessions are stored **in memory** (fine for local development). For production behind multiple instances, use **Redis** (see [below](#redis-session-store-production)).
+
+---
+
+## 5. Add an HTTP endpoint
+
+The gateway sends a JSON body; you pass it to `UssdApp` and return the response:
 
 ```csharp
-[UssdAction("balance_check")]
-public class BalanceCheckHandler : IActionHandler
-{
-    public Task<UssdStepResult> HandleAsync(UssdContext context)
-    {
-        var balance = 1500.00m; // Fetch from database
+using Bobcode.Ussd.Arkesel.Core;
+using Bobcode.Ussd.Arkesel.Models;
 
-        return Task.FromResult(new UssdStepResult
-        {
-            Message = $"Your balance is GHS {balance:N2}",
-            ContinueSession = false
-        });
-    }
-}
-```
-
-#### 5. Create Endpoint
-
-```csharp
 app.MapPost("/ussd", async (UssdRequestDto request, UssdApp ussdApp) =>
 {
     var response = await ussdApp.HandleRequestAsync(request);
@@ -111,76 +106,78 @@ app.MapPost("/ussd", async (UssdRequestDto request, UssdApp ussdApp) =>
 });
 ```
 
-## Configuration Options
+---
 
-The SDK supports extensive configuration through `UssdOptions`:
+## 6. Implement an action handler
 
-```csharp
-builder.Services.AddUssdSdk(menu, options =>
-{
-    // Session management
-    options.SessionTimeout = TimeSpan.FromMinutes(5);
-
-    // Navigation commands
-    options.BackCommand = "0";
-    options.HomeCommand = "#";
-    options.EnableAutoBackNavigation = true;
-
-    // Pagination
-    options.EnablePagination = true;
-    options.ItemsPerPage = 5;
-    options.NextPageCommand = "99";
-    options.PreviousPageCommand = "98";
-
-    // Messages
-    options.InvalidInputMessage = "Invalid input. Please try again.";
-    options.DefaultEndMessage = "Thank you for using our service.";
-
-    // Session resumption
-    options.EnableSessionResumption = true;
-    options.ResumeSessionPrompt = "You have an active session.";
-    options.ResumeOptionLabel = "Resume";
-    options.StartFreshOptionLabel = "Start Fresh";
-});
-```
-
-## Advanced Features
-
-### Session Management
-
-Use strongly-typed session keys for type-safe data storage:
+Handlers run when the user hits an option wired with `.Action<...>()`. Inheriting **`BaseActionHandler`** gives helpers like **`End(...)`** and **`Continue(...)`**. **`[UssdAction]`** (no argument) derives the action key from the class name (e.g. `BalanceCheckHandler` → `BalanceCheck`).
 
 ```csharp
-public static class SessionKeys
+using Bobcode.Ussd.Arkesel.Actions;
+using Bobcode.Ussd.Arkesel.Attributes;
+
+[UssdAction]
+public class BalanceCheckHandler : BaseActionHandler
 {
-    public static SessionKey<string?> Recipient => new("recipient");
-    public static SessionKey<decimal?> Amount => new("amount");
+    public override Task<UssdStepResult> HandleAsync(UssdContext context)
+    {
+        var balance = 1500.00m; // load from your database
+        return Task.FromResult(End($"Your balance is GHS {balance:N2}"));
+    }
 }
-
-// In your handler
-Set(context, SessionKeys.Recipient, phoneNumber);
-var recipient = Get(context, SessionKeys.Recipient);
 ```
 
+You can also implement **`IActionHandler`** directly and set **`Key`** yourself; see **[docs/sdk.md](docs/sdk.md)**.
 
+---
 
-### Pagination
+## Request JSON (what the gateway sends)
 
-Automatically paginate long lists:
+Typical shape (property names are usually **camelCase** in JSON, e.g. `sessionID`, `newSession`):
 
-```csharp
-.Node(BankMenuNode.Products, n => n
-    .Message("Our Products:")
-    .OptionList(products,
-        p => $"{p.Name} - GHS {p.Price}",
-        autoPaginate: true,
-        itemsPerPage: 3)
-)
+**First dial (new session):**
+
+```json
+{
+  "sessionID": "unique-session-id",
+  "userID": "user123",
+  "msisdn": "233271234567",
+  "userData": "",
+  "newSession": true,
+  "network": "MTN"
+}
 ```
 
-### Custom Session Store
+**Later inputs:** same `sessionID`, set `"newSession": false`, and put the user’s keypress in **`userData`** (e.g. `"1"`).
 
-Replace the default in-memory session store with Redis or other implementations:
+---
+
+## Try the sample
+
+The repo includes a full demo app:
+
+```bash
+cd Bobcode.Ussd.Arkesel.Sample
+dotnet run
+```
+
+Open **Swagger** at the URL shown in the console (see `launchSettings.json` for ports—often `https://localhost:5xxx/swagger`). Use **POST `/ussd`** with the JSON examples in **[Bobcode.Ussd.Arkesel.Sample/README.md](Bobcode.Ussd.Arkesel.Sample/README.md)**.
+
+---
+
+## What you get out of the box
+
+- Typed navigation via enums and **`UssdMenuBuilder`**
+- **`UssdApp`** orchestration, session handling, back/home, pagination
+- **`SessionKey<T>`** for typed session data (see **[docs/sdk.md](docs/sdk.md)**)
+- Optional **session resumption** via `UssdOptions.EnableSessionResumption`
+- Pluggable **`IUssdSessionStore`** (memory, Redis, or your own)
+
+---
+
+## Redis session store (production)
+
+Register **`RedisSessionStore`** and **`IConnectionMultiplexer`** as usual for StackExchange.Redis, then:
 
 ```csharp
 builder.Services.AddUssdSdk<RedisSessionStore>(menu, options =>
@@ -189,58 +186,26 @@ builder.Services.AddUssdSdk<RedisSessionStore>(menu, options =>
 });
 ```
 
-## Documentation
+---
 
-For detailed documentation, please refer to:
+## More documentation
 
-- **[SDK Documentation](docs/sdk.md)** - Complete SDK reference, architecture, and API details
-- **[Sample Project Documentation](docs/sample.md)** - Working examples and implementation patterns
-- **[Sample Application README](sample/README.md)** - Full sample project with multiple features
+| Doc | Contents |
+|-----|----------|
+| **[docs/sdk.md](docs/sdk.md)** | Architecture, `UssdOptions`, pagination, custom session stores |
+| **[docs/sample.md](docs/sample.md)** | Sample patterns and walkthroughs |
+| **[Bobcode.Ussd.Arkesel.Sample/README.md](Bobcode.Ussd.Arkesel.Sample/README.md)** | Sample menus, handlers, and curl-style requests |
 
-## Sample Project
-
-The repository includes a comprehensive sample application demonstrating:
-
-- Multiple menu nodes and navigation flows
-- Action handlers for business logic
-- Session-based multi-step processes
-- Pagination of product lists
-- Voting functionality
-- Money transfer flows
-- Session resumption
-
-To run the sample:
-
-```bash
-cd sample
-dotnet run
-```
-
-Then send a POST request to `http://localhost:5000/ussd`:
-
-```json
-{
-  "sessionID": "unique-session-id",
-  "userID": "user123",
-  "msisdn": "0244000000",
-  "newSession": true,
-  "userInput": ""
-}
-```
-
-## Requirements
-
-- .NET 8.0 or later
-- ASP.NET Core
+---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT — see the [LICENSE](LICENSE) file.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Pull requests are welcome.
 
 ## Support
 
-For issues, questions, or contributions, please visit the GitHub repository.
+Use the GitHub issue tracker for bugs and questions.

@@ -6,6 +6,8 @@ namespace Bobcode.Ussd.Arkesel.Actions;
 
 public class RedisSessionStore : IUssdSessionStore
 {
+    private static readonly JsonSerializerOptions SessionJsonOptions = new();
+
     private readonly IDatabase _db;
     private readonly string _prefix = "ussd:sess:";
 
@@ -20,13 +22,13 @@ public class RedisSessionStore : IUssdSessionStore
     {
         var bytes = await _db.StringGetAsync(_prefix + sessionId);
         if (bytes.IsNullOrEmpty) return null;
-        return JsonSerializer.Deserialize<UssdSession>(bytes!);
+        return JsonSerializer.Deserialize<UssdSession>(bytes!, SessionJsonOptions);
     }
 
 
     public Task SetAsync(UssdSession session, TimeSpan ttl, CancellationToken ct = default)
     {
-        var bytes = JsonSerializer.Serialize(session);
+        var bytes = JsonSerializer.Serialize(session, SessionJsonOptions);
         return _db.StringSetAsync(_prefix + session.SessionId, bytes, ttl);
     }
 

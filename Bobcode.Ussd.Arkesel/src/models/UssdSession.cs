@@ -25,13 +25,13 @@ public class UssdSession
     /// </summary>
     public string? PreviousStep { get; set; }
 
-    public UssdSession(string sessionId, string msisdn, string userId, string network, string? initialStep = null)
+    public UssdSession(string sessionId, string msisdn, string userId, string network, string? currentStep = null)
     {
         SessionId = sessionId;
         Msisdn = msisdn;
         UserId = userId;
         Network = network;
-        CurrentStep = initialStep ?? "main"; // Fallback to "main" for backward compatibility
+        CurrentStep = currentStep ?? "main"; // Fallback to "main" for backward compatibility
         ExpireAt = DateTime.UtcNow.AddMinutes(2);
     }
 
