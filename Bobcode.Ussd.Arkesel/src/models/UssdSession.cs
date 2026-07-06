@@ -13,7 +13,7 @@ public class UssdSession
     public int Part { get; set; } = 1;
     public string CurrentStep { get; set; }
     public DateTime ExpireAt { get; set; }
-    public IDictionary<string, object?> Data { get; } = new Dictionary<string, object?>();
+    public Dictionary<string, object?> Data { get; set; } = new();
 
     /// <summary>
     /// Indicates if the session is waiting for resume/fresh choice
