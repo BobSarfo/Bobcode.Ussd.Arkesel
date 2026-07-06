@@ -60,19 +60,18 @@ jobs:
         run: dotnet restore Bobcode.Ussd.Arkesel.sln
 
       - name: Build
-        run: dotnet build ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj --no-restore --configuration Release
-
-
-      - name: Pack NuGet package
-        run: dotnet pack ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj \
-          --no-build \
-          --configuration Release \
-          --output ./artifacts \
-          -p:PackageVersion=${{ env.VERSION }}
+        run: dotnet build "./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj" --no-restore --configuration Release
 
       - name: Pack NuGet package
-        run: dotnet pack ./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj --no-build --configuration Release --output ./artifacts
-      
+        run: |
+          mkdir -p ./artifacts
+          PACK_ARGS=(--no-build --configuration Release --output ./artifacts)
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            PACK_ARGS+=(-p:PackageVersion="$VERSION")
+          fi
+          dotnet pack "./Bobcode.Ussd.Arkesel/Bobcode.Ussd.Arkesel.csproj" "${PACK_ARGS[@]}"
+
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
         id: login
